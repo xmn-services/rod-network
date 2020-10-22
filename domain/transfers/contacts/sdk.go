@@ -16,6 +16,7 @@ type Builder interface {
 	WithDescription(description string) Builder
 	WithPublicKey(pubKey public.Key) Builder
 	WithPrivateKey(pk encryption.PrivateKey) Builder
+	WithAnswer(answer hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Contact, error)
 }
@@ -27,6 +28,7 @@ type Contact interface {
 	Description() string
 	PublicKey() public.Key
 	PrivateKey() encryption.PrivateKey
+	Answer() hash.Hash
 }
 
 // Repository represents a contact repository

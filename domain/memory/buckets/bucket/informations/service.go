@@ -1,7 +1,7 @@
 package informations
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/bucket/files"
 	transfer_information "github.com/xmn-services/rod-network/domain/transfers/buckets/informations"
 )
 

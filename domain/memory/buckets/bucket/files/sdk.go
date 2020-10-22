@@ -6,7 +6,7 @@ import (
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/libs/hashtree"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files/chunks"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/bucket/files/chunks"
 	transfer_file "github.com/xmn-services/rod-network/domain/transfers/buckets/files"
 )
 

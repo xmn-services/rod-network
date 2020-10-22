@@ -7,7 +7,7 @@ import (
 
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/bucket/files"
 )
 
 type information struct {

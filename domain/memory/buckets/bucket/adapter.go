@@ -1,4 +1,4 @@
-package buckets
+package bucket
 
 import (
 	transfer_bucket "github.com/xmn-services/rod-network/domain/transfers/buckets"

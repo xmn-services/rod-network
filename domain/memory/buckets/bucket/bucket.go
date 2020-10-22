@@ -1,12 +1,12 @@
-package buckets
+package bucket
 
 import (
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/buckets/bucket/informations"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/informations"
 )
 
 type bucket struct {

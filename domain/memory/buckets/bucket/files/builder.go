@@ -6,7 +6,7 @@ import (
 
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files/chunks"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/bucket/files/chunks"
 )
 
 type builder struct {
