@@ -11,7 +11,7 @@ import (
 
 // Identity represents the identity
 type Identity interface {
-	entities.Immutable
+	entities.Mutable
 	Name() string
 	Root() string
 	Buckets() buckets.Buckets
