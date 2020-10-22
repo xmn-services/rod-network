@@ -3,17 +3,11 @@ package contacts
 import (
 	"time"
 
-	transfer_contact "github.com/xmn-services/rod-network/domain/transfers/contacts"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
-
-// Adapter returns the contact adapter
-type Adapter interface {
-	ToTransfer(contact Contact) (transfer_contact.Contact, error)
-}
 
 // Builder represents a contact builder
 type Builder interface {
