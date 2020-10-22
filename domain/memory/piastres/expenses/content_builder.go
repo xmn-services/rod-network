@@ -1,0 +1,125 @@
+package expenses
+
+import (
+	"errors"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
+)
+
+type contentBuilder struct {
+	hashAdapter      hash.Adapter
+	immutableBuilder entities.ImmutableBuilder
+	amount           uint
+	from             bills.Bill
+	cancel           locks.Lock
+	remaining        locks.Lock
+	createdOn        *time.Time
+}
+
+func createContentBuilder(
+	hashAdapter hash.Adapter,
+	immutableBuilder entities.ImmutableBuilder,
+) ContentBuilder {
+	out := contentBuilder{
+		hashAdapter:      hashAdapter,
+		immutableBuilder: immutableBuilder,
+		amount:           0,
+		from:             nil,
+		cancel:           nil,
+		remaining:        nil,
+		createdOn:        nil,
+	}
+
+	return &out
+}
+
+// Create initializes the contentBuilder
+func (app *contentBuilder) Create() ContentBuilder {
+	return createContentBuilder(app.hashAdapter, app.immutableBuilder)
+}
+
+// WithAmount adds an amount to the contentBuilder
+func (app *contentBuilder) WithAmount(amount uint) ContentBuilder {
+	app.amount = amount
+	return app
+}
+
+// From adds a from bill to the contentBuilder
+func (app *contentBuilder) From(from bills.Bill) ContentBuilder {
+	app.from = from
+	return app
+}
+
+// WithCancel adds a cancel lock to the contentBuilder
+func (app *contentBuilder) WithCancel(cancel locks.Lock) ContentBuilder {
+	app.cancel = cancel
+	return app
+}
+
+// WithRemaining adds a remaining lock to the contentBuilder
+func (app *contentBuilder) WithRemaining(remaining locks.Lock) ContentBuilder {
+	app.remaining = remaining
+	return app
+}
+
+// CreatedOn adds a creation time to the contentBuilder
+func (app *contentBuilder) CreatedOn(createdOn time.Time) ContentBuilder {
+	app.createdOn = &createdOn
+	return app
+}
+
+// Now builds a new Expense instance
+func (app *contentBuilder) Now() (Content, error) {
+	if app.from == nil {
+		return nil, errors.New("the from bill is mandatory in order to build a Content instance")
+	}
+
+	if app.cancel == nil {
+		return nil, errors.New("the cancel lock is mandatory in order to build a Content instance")
+	}
+
+	from := app.from.Amount()
+	if app.amount > from {
+		str := fmt.Sprintf("the amount (%d) cannot be larger than the from amount (%d)", app.amount, from)
+		return nil, errors.New(str)
+	}
+
+	if app.remaining != nil {
+		remaining := from - app.amount
+		if remaining <= 0 {
+			return nil, errors.New("the remaining lock was expected to be nil since the bill was totally spent")
+		}
+	}
+
+	data := [][]byte{
+		[]byte(strconv.Itoa(int(app.amount))),
+		app.from.Hash().Bytes(),
+		app.cancel.Hash().Bytes(),
+	}
+
+	if app.remaining != nil {
+		data = append(data, app.remaining.Hash().Bytes())
+	}
+
+	hsh, err := app.hashAdapter.FromMultiBytes(data)
+	if err != nil {
+		return nil, err
+	}
+
+	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	if app.remaining != nil {
+		return createContentWithRemaining(immutable, app.amount, app.from, app.cancel, app.remaining), nil
+	}
+
+	return createContent(immutable, app.amount, app.from, app.cancel), nil
+}

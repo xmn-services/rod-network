@@ -1,0 +1,138 @@
+package links
+
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
+)
+
+func TestLink_Success(t *testing.T) {
+	hashAdapter := hash.NewAdapter()
+
+	// shareholder's PK:
+	pk := signature.NewPrivateKeyFactory().Create()
+	pubKey := pk.PublicKey()
+	pubKeyHash, err := hashAdapter.FromBytes([]byte(pubKey.String()))
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	// shareholders:
+	power := uint(1)
+	holders := []shareholders.ShareHolder{
+		shareholders.CreateShareHolderForTests(power, *pubKeyHash),
+	}
+
+	// transaction expense bill lock:
+	treeshold := uint(1)
+	lock := locks.CreateLockForTests(holders, treeshold)
+
+	// transaction expense bill:
+	trxExpenseBillAmount := uint(11)
+	trxExpenseBill := bills.CreateBillForTests(lock, trxExpenseBillAmount)
+
+	// transaction expense cancel lock:
+	cancelTreeshold := uint(1)
+	trxExpenseCancelLock := locks.CreateLockForTests(holders, cancelTreeshold)
+
+	// transaction expense:
+	trxExpenseContent := expenses.CreateContentForTests(trxExpenseBillAmount, trxExpenseBill, trxExpenseCancelLock)
+
+	trxExpenseSig, err := pk.RingSign(trxExpenseContent.From().Lock().Hash().String(), []signature.PublicKey{
+		pubKey,
+	})
+
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	trxExpense := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
+		trxExpenseSig,
+	})
+
+	// transaction:
+	executesOnTrigger := true
+	amountPubKeyInRing := uint(20)
+	trxIns, _ := transactions.CreateTransactionWithExpenseForTests(amountPubKeyInRing, executesOnTrigger, trxExpense)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	// transactions:
+	trx := []transactions.Transaction{
+		trxIns,
+	}
+
+	// genesis bill:
+	amount := uint(56)
+	bill := bills.CreateBillForTests(lock, amount)
+
+	// genesis:
+	blockDiffBase := uint(1)
+	blockDiffIncreasePerTrx := float64(1.0)
+	linkDiff := uint(1)
+	genesisIns := genesis.CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerTrx, linkDiff, bill)
+
+	// block:
+	additional := uint(0)
+	blockIns := blocks.CreateBlockForTests(genesisIns, additional, trx)
+
+	// link:
+	index := uint(5)
+	prevLink, _ := hashAdapter.FromBytes([]byte("this is the prev link"))
+	linkIns := CreateLinkForTests(*prevLink, blockIns, index)
+
+	// repository and service:
+	genService, repository, service := CreateRepositoryServiceForTests()
+	err = service.Save(linkIns)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// save the genesis;
+	err = genService.Save(genesisIns)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	retTrx, err := repository.Retrieve(linkIns.Hash())
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if !linkIns.Hash().Compare(retTrx.Hash()) {
+		t.Errorf("the hash is invalid")
+		return
+	}
+
+	js, err := json.Marshal(linkIns)
+	if err != nil {
+		t.Errorf("the Link instance could not be converted to JSON: %s", err.Error())
+		return
+	}
+
+	ins := new(link)
+	err = json.Unmarshal(js, ins)
+	if err != nil {
+		t.Errorf("the JSON instance could not be converted to a Link instance: %s", err.Error())
+		return
+	}
+
+	// compare:
+	TestCompare(t, ins, linkIns)
+}
