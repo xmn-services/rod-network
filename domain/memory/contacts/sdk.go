@@ -3,7 +3,7 @@ package contacts
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/contacts/requests/answers"
+	answers_public "github.com/xmn-services/rod-network/domain/memory/contacts/requests/answers/public"
 	transfer_contact "github.com/xmn-services/rod-network/domain/transfers/contacts"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption/public"
@@ -23,7 +23,7 @@ type Builder interface {
 	WithDescription(description string) Builder
 	WithPublicKey(pubKey public.Key) Builder
 	WithPrivateKey(pk encryption.PrivateKey) Builder
-	WithAnswer(answer answers.Public) Builder
+	WithAnswer(answer answers_public.Answer) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Contact, error)
 }
@@ -35,7 +35,7 @@ type Contact interface {
 	Description() string
 	PublicKey() public.Key
 	PrivateKey() encryption.PrivateKey
-	Answer() answers.Public
+	Answer() answers_public.Answer
 }
 
 // Repository represents a contact repository

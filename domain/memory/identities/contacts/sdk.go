@@ -3,7 +3,7 @@ package contacts
 import (
 	"github.com/xmn-services/rod-network/domain/memory/contacts"
 	"github.com/xmn-services/rod-network/domain/memory/contacts/requests"
-	"github.com/xmn-services/rod-network/domain/memory/contacts/requests/answers"
+	answers_public "github.com/xmn-services/rod-network/domain/memory/contacts/requests/answers/public"
 	"github.com/xmn-services/rod-network/libs/entities"
 )
 
@@ -15,5 +15,5 @@ type Contact interface {
 	IsPending() bool
 	Pending() requests.Request
 	IsDenied() bool
-	Denied() answers.Public
+	Denied() answers_public.Answer
 }
