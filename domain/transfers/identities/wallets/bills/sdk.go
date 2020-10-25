@@ -1,11 +1,11 @@
 package bills
 
 import (
-	"hash"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Adapter represents a bill adapter

@@ -1,10 +1,10 @@
 package identities
 
 import (
-	"hash"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Adapter represents an identity adapter
@@ -23,6 +23,7 @@ type Builder interface {
 	WithWallets(wallets []hash.Hash) Builder
 	WithBuckets(buckets []hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
+	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Identity, error)
 }
 

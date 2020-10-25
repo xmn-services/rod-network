@@ -13,9 +13,10 @@ import (
 type Wallet interface {
 	entities.Immutable
 	Name() string
-	Bills() []bills.Bill
 	Balances() Balances
 	Statement() statements.Statement
+	HasBills() bool
+	Bills() []bills.Bill
 	HasDescription() bool
 	Description() string
 }

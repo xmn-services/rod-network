@@ -1,10 +1,10 @@
 package wallets
 
 import (
-	"hash"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Adapter represents a wallet adapter
@@ -29,8 +29,9 @@ type Builder interface {
 type Wallet interface {
 	entities.Immutable
 	Name() string
-	Bills() []hash.Hash
 	Statement() hash.Hash
+	HasBills() bool
+	Bills() []hash.Hash
 	HasDescription() bool
 	Description() string
 }

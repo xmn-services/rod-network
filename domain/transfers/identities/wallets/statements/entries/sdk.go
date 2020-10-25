@@ -1,10 +1,10 @@
 package entries
 
 import (
-	"hash"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Adapter represents an entry adapter

@@ -1,10 +1,10 @@
 package statements
 
 import (
-	"hash"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Adapter represents a statement adapter
