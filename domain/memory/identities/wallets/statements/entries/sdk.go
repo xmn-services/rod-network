@@ -9,6 +9,7 @@ import (
 type Entry interface {
 	entities.Immutable
 	Name() string
-	Description() string
 	Transactions() []transactions.Transaction
+	HasDescription() bool
+	Description() string
 }

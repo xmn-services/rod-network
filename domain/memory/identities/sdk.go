@@ -12,7 +12,8 @@ type Identity interface {
 	Seed() string
 	Name() string
 	Root() string
-	Wallet() wallets.Wallet
+	HasWallets() bool
+	Wallets() []wallets.Wallet
 	HasBuckets() bool
-	Buckets() buckets.Bucket
+	Buckets() []buckets.Bucket
 }

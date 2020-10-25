@@ -12,9 +12,12 @@ import (
 // Wallet represents the wallet
 type Wallet interface {
 	entities.Immutable
+	Name() string
 	Bills() []bills.Bill
 	Balances() Balances
 	Statement() statements.Statement
+	HasDescription() bool
+	Description() string
 }
 
 // Balances represents balances
