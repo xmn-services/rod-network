@@ -1,17 +1,27 @@
 package peer
 
-import "github.com/xmn-services/rod-network/libs/entities"
+import (
+	"time"
+
+	"github.com/xmn-services/rod-network/libs/entities"
+)
+
+// Builder represents a peer builder
+type Builder interface {
+	Create() Builder
+	WithHost(host string) Builder
+	WithPort(port uint) Builder
+	IsClear() Builder
+	IsOnion() Builder
+	CreatedOn(createdOn time.Time) Builder
+	Now() (Peer, error)
+}
 
 // Peer represents a peer
 type Peer interface {
 	entities.Immutable
-	Protocol() Protocol
 	Host() string
 	Port() uint
-}
-
-// Protocol represents a peer protocol
-type Protocol interface {
 	IsClear() bool
 	IsOnion() bool
 }

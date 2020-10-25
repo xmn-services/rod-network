@@ -2,6 +2,7 @@ package peer
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -9,8 +10,8 @@ import (
 )
 
 type builder struct {
+	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	hash             *hash.Hash
 	host             string
 	port             uint
 	isClear          bool
@@ -19,11 +20,12 @@ type builder struct {
 }
 
 func createBuilder(
+	hashAdapter hash.Adapter,
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
+		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		hash:             nil,
 		host:             "",
 		port:             0,
 		isClear:          false,
@@ -36,13 +38,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.immutableBuilder)
-}
-
-// WithHash adds an hash to the builder
-func (app *builder) WithHash(hash hash.Hash) Builder {
-	app.hash = &hash
-	return app
+	return createBuilder(app.hashAdapter, app.immutableBuilder)
 }
 
 // WithHost adds a host to the builder
@@ -77,10 +73,6 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Peer instance
 func (app *builder) Now() (Peer, error) {
-	if app.hash == nil {
-		return nil, errors.New("the hash is mandatory in order to build a Peer instance")
-	}
-
 	if app.host == "" {
 		return nil, errors.New("the host is mandatory in order to build a Peer instance")
 	}
@@ -89,7 +81,16 @@ func (app *builder) Now() (Peer, error) {
 		return nil, errors.New("the port is mandatory in order to build a Peer instance")
 	}
 
-	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
+	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
+		[]byte(app.host),
+		[]byte(strconv.Itoa(int(app.port))),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
 	if err != nil {
 		return nil, err
 	}

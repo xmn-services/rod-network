@@ -19,7 +19,7 @@ type Builder interface {
 
 // Application represents an identity application
 type Application interface {
-	Create() error
+	New(root string) error
 	Update(update Update) error
 	Retrieve() (identities.Identity, error)
 	Delete() error
