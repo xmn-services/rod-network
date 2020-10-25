@@ -2,8 +2,7 @@ package identities
 
 import (
 	"github.com/xmn-services/rod-network/domain/memory/buckets"
-	"github.com/xmn-services/rod-network/domain/memory/identities/lists"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/bills/owners"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/rod-network/libs/entities"
 )
 
@@ -13,7 +12,7 @@ type Identity interface {
 	Seed() string
 	Name() string
 	Root() string
-	Buckets() buckets.Buckets
-	Piastres() owners.Owners
-	Lists() lists.Lists
+	Wallet() wallets.Wallet
+	HasBuckets() bool
+	Buckets() buckets.Bucket
 }

@@ -2,7 +2,6 @@ package identities
 
 import (
 	"github.com/xmn-services/rod-network/application/identities/buckets"
-	"github.com/xmn-services/rod-network/application/identities/lists"
 	"github.com/xmn-services/rod-network/application/identities/piastres"
 	"github.com/xmn-services/rod-network/application/identities/servers"
 	"github.com/xmn-services/rod-network/application/identities/stackframes"
@@ -25,7 +24,6 @@ type Application interface {
 	Retrieve() (identities.Identity, error)
 	Delete() error
 	Bucket() buckets.Application
-	List() lists.Application
 	Piastre() piastres.Application
 	Server() servers.Application
 	StackFrame() stackframes.Application
