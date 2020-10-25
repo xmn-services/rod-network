@@ -10,5 +10,6 @@ type Request interface {
 	entities.Immutable
 	PublicKey() public.Key
 	Subject() string
+	HasDescription() bool
 	Description() string
 }
