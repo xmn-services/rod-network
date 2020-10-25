@@ -11,7 +11,7 @@ type Answer interface {
 	entities.Immutable
 	Request() request_public.Request
 	IsAccepted() bool
-	PublicKey() public.Key
-	HasDescription() bool
 	Description() string
+	HasPublicKey() bool
+	PublicKey() public.Key
 }

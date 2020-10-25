@@ -1,7 +1,7 @@
 package lists
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/identities/contacts"
+	"github.com/xmn-services/rod-network/domain/memory/identities/lists/list/contacts"
 	"github.com/xmn-services/rod-network/libs/entities"
 )
 
