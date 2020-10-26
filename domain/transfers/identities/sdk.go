@@ -47,6 +47,5 @@ type Repository interface {
 // Service represents an identity service
 type Service interface {
 	Save(identity Identity) error
-	Update(original Identity, updated Identity) error
 	Delete(identity Identity) error
 }

@@ -7,7 +7,8 @@ import (
 
 // Application represents the application
 type Application interface {
+	Peers() application_peers.Application
 	Init(name string, root string, password string, seed string) error
-	Identity(name string, password string, seed string) application_identities.Application
-	Peer() application_peers.Application
+	NewIdentity(name string, password string, seed string, root string) error
+	Authenticate(name string, password string, seed string) application_identities.Application
 }

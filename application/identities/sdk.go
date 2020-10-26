@@ -4,7 +4,6 @@ import (
 	"github.com/xmn-services/rod-network/application/identities/buckets"
 	"github.com/xmn-services/rod-network/application/identities/piastres"
 	"github.com/xmn-services/rod-network/application/identities/servers"
-	"github.com/xmn-services/rod-network/application/identities/stackframes"
 	"github.com/xmn-services/rod-network/domain/memory/identities"
 )
 
@@ -19,14 +18,12 @@ type Builder interface {
 
 // Application represents an identity application
 type Application interface {
-	New(root string) error
 	Update(update Update) error
 	Retrieve() (identities.Identity, error)
 	Delete() error
 	Bucket() buckets.Application
 	Piastre() piastres.Application
 	Server() servers.Application
-	StackFrame() stackframes.Application
 }
 
 // UpdateBuilder represents an update builder
