@@ -1,7 +1,7 @@
 package peers
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/peers/peer"
+	"github.com/xmn-services/rod-network/domain/transfers/peers/peer"
 )
 
 type builder struct {

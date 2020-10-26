@@ -1,6 +1,7 @@
 package wallets
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -13,6 +14,45 @@ type wallet struct {
 	bills       []hash.Hash
 	statement   hash.Hash
 	description string
+}
+
+func createWalletFromJSON(ins *jsonWallet) (Wallet, error) {
+	hashAdapter := hash.NewAdapter()
+	hsh, err := hashAdapter.FromString(ins.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	statement, err := hashAdapter.FromString(ins.Statement)
+	if err != nil {
+		return nil, err
+	}
+
+	builder := NewBuilder().Create().
+		WithHash(*hsh).
+		WithName(ins.Name).
+		WithStatement(*statement).
+		CreatedOn(ins.CreatedOn)
+
+	if ins.Description != "" {
+		builder.WithDescription(ins.Description)
+	}
+
+	if len(ins.Bills) > 0 {
+		bills := []hash.Hash{}
+		for _, oneBill := range ins.Bills {
+			hsh, err := hashAdapter.FromString(oneBill)
+			if err != nil {
+				return nil, err
+			}
+
+			bills = append(bills, *hsh)
+		}
+
+		builder.WithBills(bills)
+	}
+
+	return builder.Now()
 }
 
 func createWallet(
@@ -107,4 +147,31 @@ func (obj *wallet) HasDescription() bool {
 // Description returns the description, if any
 func (obj *wallet) Description() string {
 	return obj.description
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *wallet) MarshalJSON() ([]byte, error) {
+	ins := createJSONWalletFromWallet(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *wallet) UnmarshalJSON(data []byte) error {
+	ins := new(jsonWallet)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createWalletFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insWallet := pr.(*wallet)
+	obj.immutable = insWallet.immutable
+	obj.name = insWallet.name
+	obj.bills = insWallet.bills
+	obj.statement = insWallet.statement
+	return nil
 }

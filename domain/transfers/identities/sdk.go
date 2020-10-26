@@ -4,8 +4,32 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
+
+// NewService creates a new service instance
+func NewService(repository Repository, fileService file.Service) Service {
+	adapter := NewAdapter()
+	return createService(adapter, repository, fileService)
+}
+
+// NewRepository creates a new repository instance
+func NewRepository(fileRepository file.Repository) Repository {
+	adapter := NewAdapter()
+	return createRepository(adapter, fileRepository)
+}
+
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	return createAdapter()
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	mutableBuilder := entities.NewMutableBuilder()
+	return createBuilder(mutableBuilder)
+}
 
 // Adapter represents an identity adapter
 type Adapter interface {
@@ -41,7 +65,7 @@ type Identity interface {
 
 // Repository represents an identity repository
 type Repository interface {
-	Retrieve(hash hash.Hash) (Identity, error)
+	Retrieve(hash hash.Hash, seed string) (Identity, error)
 }
 
 // Service represents an identity service

@@ -20,8 +20,13 @@ func createRepository(adapter Adapter, fileRepository file.Repository) Repositor
 }
 
 // Retrieve retrieves a identity by hash
-func (app *repository) Retrieve(hsh hash.Hash) (Identity, error) {
-	js, err := app.fileRepository.Retrieve(hsh.String())
+func (app *repository) Retrieve(hsh hash.Hash, seed string) (Identity, error) {
+	fileName, err := makeFileName(hsh, seed)
+	if err != nil {
+		return nil, err
+	}
+
+	js, err := app.fileRepository.Retrieve(fileName)
 	if err != nil {
 		return nil, err
 	}

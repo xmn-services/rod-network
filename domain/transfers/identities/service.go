@@ -22,15 +22,25 @@ func createService(adapter Adapter, repository Repository, fileService file.Serv
 
 // Save saves a identity instance
 func (app *service) Save(identity Identity) error {
+	fileName, err := makeFileName(identity.Hash(), identity.Seed())
+	if err != nil {
+		return err
+	}
+
 	js, err := app.adapter.ToJSON(identity)
 	if err != nil {
 		return err
 	}
 
-	return app.fileService.Save(identity.Hash().String(), js)
+	return app.fileService.Save(fileName, js)
 }
 
 // Delete deletes a identity instance
 func (app *service) Delete(identity Identity) error {
-	return app.fileService.Delete(identity.Hash().String())
+	fileName, err := makeFileName(identity.Hash(), identity.Seed())
+	if err != nil {
+		return err
+	}
+
+	return app.fileService.Delete(fileName)
 }

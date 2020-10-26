@@ -1,8 +1,33 @@
 package peers
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/peers/peer"
+	"github.com/xmn-services/rod-network/domain/transfers/peers/peer"
+	"github.com/xmn-services/rod-network/libs/file"
 )
+
+// NewService creates a new service instance
+func NewService(fileService file.Service, filePathWithName string) Service {
+	adapter := NewAdapter()
+	return createService(adapter, fileService, filePathWithName)
+}
+
+// NewRepository creates a new repository instance
+func NewRepository(fileRepository file.Repository, filePathWithName string) Repository {
+	adapter := NewAdapter()
+	return createRepository(adapter, fileRepository, filePathWithName)
+}
+
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	peerAdapter := peer.NewAdapter()
+	builder := NewBuilder()
+	return createAdapter(peerAdapter, builder)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	return createBuilder()
+}
 
 // Adapter represents a peers adapter
 type Adapter interface {

@@ -1,6 +1,7 @@
 package identities
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -14,6 +15,51 @@ type identity struct {
 	root    string
 	wallets []hash.Hash
 	buckets []hash.Hash
+}
+
+func createIdentityFromJSON(ins *jsonIdentity) (Identity, error) {
+	hashAdapter := hash.NewAdapter()
+	hsh, err := hashAdapter.FromString(ins.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	builder := NewBuilder().Create().
+		WithHash(*hsh).
+		WithSeed(ins.Seed).
+		WithName(ins.Name).
+		WithRoot(ins.Root).
+		CreatedOn(ins.CreatedOn)
+
+	if len(ins.Wallets) > 0 {
+		wallets := []hash.Hash{}
+		for _, oneWallet := range ins.Wallets {
+			hsh, err := hashAdapter.FromString(oneWallet)
+			if err != nil {
+				return nil, err
+			}
+
+			wallets = append(wallets, *hsh)
+		}
+
+		builder.WithWallets(wallets)
+	}
+
+	if len(ins.Buckets) > 0 {
+		buckets := []hash.Hash{}
+		for _, oneBucket := range ins.Buckets {
+			hsh, err := hashAdapter.FromString(oneBucket)
+			if err != nil {
+				return nil, err
+			}
+
+			buckets = append(buckets, *hsh)
+		}
+
+		builder.WithBuckets(buckets)
+	}
+
+	return builder.Now()
 }
 
 func createIdentity(
@@ -91,7 +137,6 @@ func (obj *identity) Name() string {
 	return obj.name
 }
 
-// Root returns the root
 func (obj *identity) Root() string {
 	return obj.root
 }
@@ -124,4 +169,33 @@ func (obj *identity) HasBuckets() bool {
 // Buckets returns the buckets, if any
 func (obj *identity) Buckets() []hash.Hash {
 	return obj.buckets
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *identity) MarshalJSON() ([]byte, error) {
+	ins := createJSONIdentityFromIdentity(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *identity) UnmarshalJSON(data []byte) error {
+	ins := new(jsonIdentity)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createIdentityFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insIdentity := pr.(*identity)
+	obj.mutable = insIdentity.mutable
+	obj.seed = insIdentity.seed
+	obj.name = insIdentity.name
+	obj.root = insIdentity.root
+	obj.wallets = insIdentity.wallets
+	obj.buckets = insIdentity.buckets
+	return nil
 }

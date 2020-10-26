@@ -3,6 +3,17 @@ package peer
 const clearProtocol = "https"
 const onionProtocol = "onion"
 
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	builder := NewBuilder()
+	return createAdapter(builder)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	return createBuilder()
+}
+
 // Adapter represents a peer adapter
 type Adapter interface {
 	ToPeer(rawURL string) (Peer, error)
