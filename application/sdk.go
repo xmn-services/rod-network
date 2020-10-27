@@ -10,5 +10,5 @@ type Application interface {
 	Peers() application_peers.Application
 	Init(name string, root string, password string, seed string) error
 	NewIdentity(name string, password string, seed string, root string) error
-	Authenticate(name string, password string, seed string) application_identities.Application
+	Authenticate(name string, seed string, password string) (application_identities.Application, error)
 }

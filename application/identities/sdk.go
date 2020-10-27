@@ -10,9 +10,7 @@ import (
 // Builder represents the application builder
 type Builder interface {
 	Create() Builder
-	WithName(name string) Builder
-	WithPassword(password string) Builder
-	WithSeed(seed string) Builder
+	WithIdentity(identity identities.Identity) Builder
 	Now() (Application, error)
 }
 

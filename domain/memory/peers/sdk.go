@@ -15,3 +15,13 @@ type Builder interface {
 type Peers interface {
 	All() []peer.Peer
 }
+
+// Repository represents a peers repository
+type Repository interface {
+	Retrieve() (Peers, error)
+}
+
+// Service represents a peer service
+type Service interface {
+	Save(peers Peers) error
+}

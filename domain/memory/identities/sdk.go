@@ -32,3 +32,15 @@ type Identity interface {
 	HasBuckets() bool
 	Buckets() []buckets.Bucket
 }
+
+// Repository represents an identity repository
+type Repository interface {
+	Retrieve(name string, seed string, password string) (Identity, error)
+}
+
+// Service represents an identity service
+type Service interface {
+	Insert(identity Identity, password string) error
+	Update(identity Identity, seed string, password string) error
+	Delete(identity Identity, seed string, password string) error
+}
