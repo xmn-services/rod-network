@@ -44,7 +44,6 @@ type Builder interface {
 	WithHash(hash hash.Hash) Builder
 	WithFiles(files hashtree.HashTree) Builder
 	WithAmount(amount uint) Builder
-	WithParent(parent hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Information, error)
 }
@@ -54,8 +53,6 @@ type Information interface {
 	entities.Immutable
 	Files() hashtree.HashTree
 	Amount() uint
-	HasParent() bool
-	Parent() *hash.Hash
 }
 
 // Repository represents a bucket information repository

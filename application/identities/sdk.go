@@ -11,6 +11,7 @@ import (
 type Builder interface {
 	Create() Builder
 	WithIdentity(identity identities.Identity) Builder
+	WithPassword(password string) Builder
 	Now() (Application, error)
 }
 
@@ -23,7 +24,7 @@ type Application interface {
 // Current represents the current application
 type Current interface {
 	Update(update Update) error
-	Retrieve() (identities.Identity, error)
+	Retrieve() identities.Identity
 	Delete() error
 }
 

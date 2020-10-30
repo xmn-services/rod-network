@@ -42,14 +42,6 @@ func (app *service) Save(information Information) error {
 		return err
 	}
 
-	if information.HasParent() {
-		parent := information.Parent()
-		err := app.Save(parent)
-		if err != nil {
-			return err
-		}
-	}
-
 	trInformation, err := app.adapter.ToTransfer(information)
 	if err != nil {
 		return err
@@ -64,14 +56,6 @@ func (app *service) Delete(information Information) error {
 	err := app.fileService.DeleteAll(files)
 	if err != nil {
 		return err
-	}
-
-	if information.HasParent() {
-		parent := information.Parent()
-		err := app.Delete(parent)
-		if err != nil {
-			return err
-		}
 	}
 
 	trInformation, err := app.adapter.ToTransfer(information)

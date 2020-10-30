@@ -1,7 +1,13 @@
 package buckets
 
-// Application represents a bucket application
+// Application represents the application
 type Application interface {
-	Add(path string) error
-	Delete(path string) error
+	Current() Current
+}
+
+// Current represents a bucket current application
+type Current interface {
+	Add(absolutePath string) error
+	Delete(absolutePath string) error
+	Purge(absolutePath string) error
 }

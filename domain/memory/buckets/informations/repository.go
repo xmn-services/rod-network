@@ -1,9 +1,9 @@
 package informations
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
 	transfer_information "github.com/xmn-services/rod-network/domain/transfers/buckets/informations"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {
@@ -46,16 +46,5 @@ func (app *repository) Retrieve(hsh hash.Hash) (Information, error) {
 	}
 
 	createdOn := trInformation.CreatedOn()
-	builder := app.builder.Create().WithFiles(files).CreatedOn(createdOn)
-	if trInformation.HasParent() {
-		parentHash := trInformation.Parent()
-		parent, err := app.Retrieve(*parentHash)
-		if err != nil {
-			return nil, err
-		}
-
-		builder.WithParent(parent)
-	}
-
-	return builder.Now()
+	return app.builder.Create().WithFiles(files).CreatedOn(createdOn).Now()
 }

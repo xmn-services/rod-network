@@ -15,7 +15,6 @@ type builder struct {
 	hash             *hash.Hash
 	files            hashtree.HashTree
 	amount           uint
-	parent           *hash.Hash
 	createdOn        *time.Time
 }
 
@@ -27,7 +26,6 @@ func createBuilder(
 		hash:             nil,
 		files:            nil,
 		amount:           0,
-		parent:           nil,
 		createdOn:        nil,
 	}
 
@@ -54,12 +52,6 @@ func (app *builder) WithFiles(files hashtree.HashTree) Builder {
 // WithAmount adds an amount to the builder
 func (app *builder) WithAmount(amount uint) Builder {
 	app.amount = amount
-	return app
-}
-
-// WithParent adds a parent hash to the builder
-func (app *builder) WithParent(parent hash.Hash) Builder {
-	app.parent = &parent
 	return app
 }
 
@@ -92,10 +84,6 @@ func (app *builder) Now() (Information, error) {
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
 	if err != nil {
 		return nil, err
-	}
-
-	if app.parent != nil {
-		return createInformationWithParent(immutable, app.files, app.amount, app.parent), nil
 	}
 
 	return createInformation(immutable, app.files, app.amount), nil

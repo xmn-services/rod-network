@@ -1,8 +1,8 @@
 package informations
 
 import (
-	"github.com/xmn-services/rod-network/libs/hashtree"
 	transfer_information "github.com/xmn-services/rod-network/domain/transfers/buckets/informations"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type adapter struct {
@@ -39,11 +39,5 @@ func (app *adapter) ToTransfer(information Information) (transfer_information.In
 
 	amount := uint(len(files))
 	createdOn := information.CreatedOn()
-	builder := app.trBuilder.Create().WithHash(hash).WithFiles(ht).WithAmount(amount).CreatedOn(createdOn)
-	if information.HasParent() {
-		parent := information.Parent().Hash()
-		builder.WithParent(parent)
-	}
-
-	return builder.Now()
+	return app.trBuilder.Create().WithHash(hash).WithFiles(ht).WithAmount(amount).CreatedOn(createdOn).Now()
 }

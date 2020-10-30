@@ -30,8 +30,35 @@ type current struct {
 	identityService    identities.Service
 }
 
-func createCurrent() Current {
-	out := current{}
+func createCurrent(
+	hashAdapter hash.Adapter,
+	shareHolderBuilder shareholders.Builder,
+	lockBuilder locks.Builder,
+	billBuilder bills.Builder,
+	genesisBuilder genesis.Builder,
+	genesisRepository genesis.Repository,
+	genesisService genesis.Service,
+	identityRepository identities.Repository,
+	walletBillBuilder wallet_bills.Builder,
+	walletBuilder wallets.Builder,
+	identityBuilder identities.Builder,
+	identityService identities.Service,
+) Current {
+	out := current{
+		hashAdapter:        hashAdapter,
+		shareHolderBuilder: shareHolderBuilder,
+		lockBuilder:        lockBuilder,
+		billBuilder:        billBuilder,
+		genesisBuilder:     genesisBuilder,
+		genesisRepository:  genesisRepository,
+		genesisService:     genesisService,
+		identityRepository: identityRepository,
+		walletBillBuilder:  walletBillBuilder,
+		walletBuilder:      walletBuilder,
+		identityBuilder:    identityBuilder,
+		identityService:    identityService,
+	}
+
 	return &out
 }
 
@@ -131,7 +158,7 @@ func (app *current) Init(
 		return err
 	}
 
-	err = app.identityService.Update(updatedIdentity, name, seed, password)
+	err = app.identityService.Update(updatedIdentity, name, seed, password, password)
 	if err != nil {
 		return err
 	}

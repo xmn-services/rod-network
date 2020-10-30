@@ -12,7 +12,6 @@ type information struct {
 	immutable entities.Immutable
 	files     hashtree.HashTree
 	amount    uint
-	parent    *hash.Hash
 }
 
 func createInformation(
@@ -20,29 +19,18 @@ func createInformation(
 	files hashtree.HashTree,
 	amount uint,
 ) Information {
-	return createInformationInternally(immutable, files, amount, nil)
-}
-
-func createInformationWithParent(
-	immutable entities.Immutable,
-	files hashtree.HashTree,
-	amount uint,
-	parent *hash.Hash,
-) Information {
-	return createInformationInternally(immutable, files, amount, parent)
+	return createInformationInternally(immutable, files, amount)
 }
 
 func createInformationInternally(
 	immutable entities.Immutable,
 	files hashtree.HashTree,
 	amount uint,
-	parent *hash.Hash,
 ) Information {
 	out := information{
 		immutable: immutable,
 		files:     files,
 		amount:    amount,
-		parent:    parent,
 	}
 
 	return &out
@@ -66,14 +54,4 @@ func (obj *information) Amount() uint {
 // CreatedOn returns the creation time
 func (obj *information) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
-}
-
-// HasParent returns true if there is a parent, false otherwise
-func (obj *information) HasParent() bool {
-	return obj.parent != nil
-}
-
-// Parent returns the parent, if any
-func (obj *information) Parent() *hash.Hash {
-	return obj.parent
 }

@@ -3,9 +3,9 @@ package chunks
 import (
 	"time"
 
+	transfer_chunk "github.com/xmn-services/rod-network/domain/transfers/buckets/files/chunks"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	transfer_chunk "github.com/xmn-services/rod-network/domain/transfers/buckets/files/chunks"
 )
 
 // NewService creates a new service instance

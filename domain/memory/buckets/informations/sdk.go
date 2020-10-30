@@ -3,11 +3,11 @@ package informations
 import (
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
+	transfer_information "github.com/xmn-services/rod-network/domain/transfers/buckets/informations"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/libs/hashtree"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
-	transfer_information "github.com/xmn-services/rod-network/domain/transfers/buckets/informations"
 )
 
 // NewService creates a new service instance
@@ -52,7 +52,6 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithFiles(files []files.File) Builder
-	WithParent(parent Information) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Information, error)
 }
@@ -62,8 +61,6 @@ type Information interface {
 	entities.Immutable
 	Files() []files.File
 	FileByPath(path string) (files.File, error)
-	HasParent() bool
-	Parent() Information
 }
 
 // Repository represents a bucket information repository

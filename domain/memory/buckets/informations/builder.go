@@ -4,16 +4,15 @@ import (
 	"errors"
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
 )
 
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	files            []files.File
-	parent           Information
 	createdOn        *time.Time
 }
 
@@ -25,7 +24,6 @@ func createBuilder(
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
 		files:            nil,
-		parent:           nil,
 		createdOn:        nil,
 	}
 
@@ -40,12 +38,6 @@ func (app *builder) Create() Builder {
 // WithFiles add files to the builder
 func (app *builder) WithFiles(files []files.File) Builder {
 	app.files = files
-	return app
-}
-
-// WithParent adds a parent information instance to the builder
-func (app *builder) WithParent(parent Information) Builder {
-	app.parent = parent
 	return app
 }
 
@@ -70,10 +62,6 @@ func (app *builder) Now() (Information, error) {
 		data = append(data, oneFile.Hash().Bytes())
 	}
 
-	if app.parent != nil {
-		data = append(data, app.parent.Hash().Bytes())
-	}
-
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
 	if err != nil {
 		return nil, err
@@ -87,10 +75,6 @@ func (app *builder) Now() (Information, error) {
 	mp := map[string]files.File{}
 	for _, oneFile := range app.files {
 		mp[oneFile.RelativePath()] = oneFile
-	}
-
-	if app.parent != nil {
-		return createInformationWithParent(immutable, app.files, mp, app.parent), nil
 	}
 
 	return createInformation(immutable, app.files, mp), nil

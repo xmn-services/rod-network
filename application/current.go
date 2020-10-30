@@ -45,5 +45,5 @@ func (app *current) Authenticate(name string, seed string, password string) (app
 		return nil, err
 	}
 
-	return app.identityAppBuilder.Create().WithIdentity(identity).Now()
+	return app.identityAppBuilder.Create().WithIdentity(identity).WithPassword(password).Now()
 }
