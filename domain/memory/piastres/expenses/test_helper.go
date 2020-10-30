@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/file"
 )
 
 // CreateExpenseForTests creates an expense instance for tests
@@ -24,7 +24,7 @@ func CreateExpenseForTests(content Content, signatures []signature.RingSignature
 }
 
 // CreateContentForTests creates an expense instance for tests
-func CreateContentForTests(amount uint, from bills.Bill, cancel locks.Lock) Content {
+func CreateContentForTests(amount uint64, from bills.Bill, cancel locks.Lock) Content {
 	createdOn := time.Now().UTC()
 	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithCancel(cancel).CreatedOn(createdOn).Now()
 	if err != nil {
@@ -35,7 +35,7 @@ func CreateContentForTests(amount uint, from bills.Bill, cancel locks.Lock) Cont
 }
 
 // CreateContentWithRemainingForTests creates an expense instance with remaining for tests
-func CreateContentWithRemainingForTests(amount uint, from bills.Bill, cancel locks.Lock, remaining locks.Lock) Content {
+func CreateContentWithRemainingForTests(amount uint64, from bills.Bill, cancel locks.Lock, remaining locks.Lock) Content {
 	createdOn := time.Now().UTC()
 	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithCancel(cancel).WithRemaining(remaining).CreatedOn(createdOn).Now()
 	if err != nil {

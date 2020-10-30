@@ -11,7 +11,7 @@ import (
 type bill struct {
 	immutable entities.Immutable
 	lock      hash.Hash
-	amount    uint
+	amount    uint64
 }
 
 func createBillFromJSON(ins *jsonBill) (Bill, error) {
@@ -37,7 +37,7 @@ func createBillFromJSON(ins *jsonBill) (Bill, error) {
 func createBill(
 	immutable entities.Immutable,
 	lock hash.Hash,
-	amount uint,
+	amount uint64,
 ) Bill {
 	out := bill{
 		immutable: immutable,
@@ -59,7 +59,7 @@ func (obj *bill) Lock() hash.Hash {
 }
 
 // Amount returns the amount
-func (obj *bill) Amount() uint {
+func (obj *bill) Amount() uint64 {
 	return obj.amount
 }
 

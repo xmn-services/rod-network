@@ -12,7 +12,7 @@ type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
 	lock             *hash.Hash
-	amount           uint
+	amount           uint64
 	createdOn        *time.Time
 }
 
@@ -48,7 +48,7 @@ func (app *builder) WithLock(lock hash.Hash) Builder {
 }
 
 // WithAmount adds an amount to the builder
-func (app *builder) WithAmount(amount uint) Builder {
+func (app *builder) WithAmount(amount uint64) Builder {
 	app.amount = amount
 	return app
 }

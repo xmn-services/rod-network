@@ -35,7 +35,7 @@ func TestTransaction_withFees_Success(t *testing.T) {
 	lock := locks.CreateLockForTests(holders, treeshold)
 
 	// transaction expense bill:
-	trxExpenseBillAmount := uint(11)
+	trxExpenseBillAmount := uint64(11)
 	trxExpenseBill := bills.CreateBillForTests(lock, trxExpenseBillAmount)
 
 	// transaction expense cancel lock:

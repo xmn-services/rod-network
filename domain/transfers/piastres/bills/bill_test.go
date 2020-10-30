@@ -12,7 +12,7 @@ func TestBill_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
 	lock, _ := hashAdapter.FromBytes([]byte("to build the lock hash..."))
-	amount := uint(56)
+	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
 	bill, err := NewBuilder().Create().WithHash(*hsh).WithLock(*lock).WithAmount(amount).CreatedOn(createdOn).Now()

@@ -16,9 +16,19 @@ type Builder interface {
 
 // Application represents an identity application
 type Application interface {
+	Current() Current
+	Sub() SubApplications
+}
+
+// Current represents the current application
+type Current interface {
 	Update(update Update) error
 	Retrieve() (identities.Identity, error)
 	Delete() error
+}
+
+// SubApplications represents an identity's sub applications
+type SubApplications interface {
 	Bucket() buckets.Application
 	Piastre() piastres.Application
 	Server() servers.Application

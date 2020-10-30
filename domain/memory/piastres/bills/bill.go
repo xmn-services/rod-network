@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 )
 
 type bill struct {
 	immutable entities.Immutable
 	lock      locks.Lock
-	amount    uint
+	amount    uint64
 }
 
 func createBillFromJSON(ins *JSONBill) (Bill, error) {
@@ -32,7 +32,7 @@ func createBillFromJSON(ins *JSONBill) (Bill, error) {
 func createBill(
 	immutable entities.Immutable,
 	lock locks.Lock,
-	amount uint,
+	amount uint64,
 ) Bill {
 	out := bill{
 		immutable: immutable,
@@ -54,7 +54,7 @@ func (obj *bill) Lock() locks.Lock {
 }
 
 // Amount returns the amount
-func (obj *bill) Amount() uint {
+func (obj *bill) Amount() uint64 {
 	return obj.amount
 }
 

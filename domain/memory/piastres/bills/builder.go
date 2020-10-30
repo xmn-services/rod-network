@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 )
 
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	lock             locks.Lock
-	amount           uint
+	amount           uint64
 	createdOn        *time.Time
 }
 
@@ -45,7 +45,7 @@ func (app *builder) WithLock(lock locks.Lock) Builder {
 }
 
 // WithAmount adds an amount to the builder
-func (app *builder) WithAmount(amount uint) Builder {
+func (app *builder) WithAmount(amount uint64) Builder {
 	app.amount = amount
 	return app
 }

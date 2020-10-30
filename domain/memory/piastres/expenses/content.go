@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type content struct {
 	immutable entities.Immutable
-	amount    uint
+	amount    uint64
 	from      bills.Bill
 	cancel    locks.Lock
 	remaining locks.Lock
@@ -51,7 +51,7 @@ func createContentFromJSON(ins *JSONContent) (Content, error) {
 
 func createContent(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from bills.Bill,
 	cancel locks.Lock,
 ) Content {
@@ -60,7 +60,7 @@ func createContent(
 
 func createContentWithRemaining(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from bills.Bill,
 	cancel locks.Lock,
 	remaining locks.Lock,
@@ -70,7 +70,7 @@ func createContentWithRemaining(
 
 func createContentInternally(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from bills.Bill,
 	cancel locks.Lock,
 	remaining locks.Lock,
@@ -92,7 +92,7 @@ func (obj *content) Hash() hash.Hash {
 }
 
 // Amount returns the amount
-func (obj *content) Amount() uint {
+func (obj *content) Amount() uint64 {
 	return obj.amount
 }
 

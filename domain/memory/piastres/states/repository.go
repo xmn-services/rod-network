@@ -1,9 +1,9 @@
 package states
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	transfer_state "github.com/xmn-services/rod-network/domain/transfers/piastres/states"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {

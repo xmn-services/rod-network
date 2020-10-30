@@ -9,7 +9,7 @@ import (
 
 // JSONContent represents a json content
 type JSONContent struct {
-	Amount    uint            `json:"amount"`
+	Amount    uint64          `json:"amount"`
 	From      *bills.JSONBill `json:"from"`
 	Cancel    *locks.JSONLock `json:"cancel"`
 	Remaining *locks.JSONLock `json:"remaining"`
@@ -33,7 +33,7 @@ func createJSONContentFromContent(content Content) *JSONContent {
 }
 
 func createJSONContent(
-	amount uint,
+	amount uint64,
 	from *bills.JSONBill,
 	cancel *locks.JSONLock,
 	remaining *locks.JSONLock,

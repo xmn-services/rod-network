@@ -7,6 +7,11 @@ import (
 	"github.com/xmn-services/rod-network/libs/entities"
 )
 
+// Factory represents a statement factory
+type Factory interface {
+	Create() (Statement, error)
+}
+
 // Builder represents the statement builder
 type Builder interface {
 	Create() Builder

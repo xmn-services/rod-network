@@ -6,16 +6,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type contentBuilder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	amount           uint
+	amount           uint64
 	from             bills.Bill
 	cancel           locks.Lock
 	remaining        locks.Lock
@@ -45,7 +45,7 @@ func (app *contentBuilder) Create() ContentBuilder {
 }
 
 // WithAmount adds an amount to the contentBuilder
-func (app *contentBuilder) WithAmount(amount uint) ContentBuilder {
+func (app *contentBuilder) WithAmount(amount uint64) ContentBuilder {
 	app.amount = amount
 	return app
 }

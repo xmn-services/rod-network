@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
@@ -13,6 +11,8 @@ import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 func TestLink_Success(t *testing.T) {
@@ -38,7 +38,7 @@ func TestLink_Success(t *testing.T) {
 	lock := locks.CreateLockForTests(holders, treeshold)
 
 	// transaction expense bill:
-	trxExpenseBillAmount := uint(11)
+	trxExpenseBillAmount := uint64(11)
 	trxExpenseBill := bills.CreateBillForTests(lock, trxExpenseBillAmount)
 
 	// transaction expense cancel lock:
@@ -57,14 +57,18 @@ func TestLink_Success(t *testing.T) {
 		return
 	}
 
-	trxExpense := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
+	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
 		trxExpenseSig,
 	})
+
+	fees := []expenses.Expense{
+		trxFee,
+	}
 
 	// transaction:
 	executesOnTrigger := true
 	amountPubKeyInRing := uint(20)
-	trxIns, _ := transactions.CreateTransactionWithExpenseForTests(amountPubKeyInRing, executesOnTrigger, trxExpense)
+	trxIns, _ := transactions.CreateTransactionWithFeesForTests(amountPubKeyInRing, executesOnTrigger, fees)
 	if err != nil {
 		t.Errorf(err.Error())
 		return
@@ -76,7 +80,7 @@ func TestLink_Success(t *testing.T) {
 	}
 
 	// genesis bill:
-	amount := uint(56)
+	amount := uint64(56)
 	bill := bills.CreateBillForTests(lock, amount)
 
 	// genesis:

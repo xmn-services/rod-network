@@ -45,7 +45,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithLock(lock locks.Lock) Builder
-	WithAmount(amount uint) Builder
+	WithAmount(amount uint64) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Bill, error)
 }
@@ -54,7 +54,7 @@ type Builder interface {
 type Bill interface {
 	entities.Immutable
 	Lock() locks.Lock
-	Amount() uint
+	Amount() uint64
 }
 
 // Repository represents a bill repository

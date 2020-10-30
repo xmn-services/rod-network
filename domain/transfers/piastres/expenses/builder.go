@@ -12,7 +12,7 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	amount           uint
+	amount           uint64
 	from             *hash.Hash
 	cancel           *hash.Hash
 	signatures       []signature.RingSignature
@@ -49,7 +49,7 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 }
 
 // WithAmount adds an amount to the builder
-func (app *builder) WithAmount(amount uint) Builder {
+func (app *builder) WithAmount(amount uint64) Builder {
 	app.amount = amount
 	return app
 }

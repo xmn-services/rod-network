@@ -9,7 +9,7 @@ import (
 // JSONBill represents a json bill
 type JSONBill struct {
 	Lock      *locks.JSONLock `json:"lock"`
-	Amount    uint            `json:"amount"`
+	Amount    uint64          `json:"amount"`
 	CreatedOn time.Time       `json:"created_on"`
 }
 
@@ -23,7 +23,7 @@ func createJSONBillFromBill(ins Bill) *JSONBill {
 
 func createJSONBill(
 	lock *locks.JSONLock,
-	amount uint,
+	amount uint64,
 	createdOn time.Time,
 ) *JSONBill {
 	out := JSONBill{

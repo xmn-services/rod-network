@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 func TestBill_Success(t *testing.T) {
@@ -30,7 +30,7 @@ func TestBill_Success(t *testing.T) {
 	treeshold := uint(51)
 	lock := locks.CreateLockForTests(shareholders, treeshold)
 
-	amount := uint(56)
+	amount := uint64(56)
 	billIns := CreateBillForTests(lock, amount)
 
 	if !billIns.Lock().Hash().Compare(lock.Hash()) {

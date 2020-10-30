@@ -11,7 +11,7 @@ import (
 
 type expense struct {
 	immutable  entities.Immutable
-	amount     uint
+	amount     uint64
 	from       hash.Hash
 	cancel     hash.Hash
 	signatures []signature.RingSignature
@@ -68,7 +68,7 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 
 func createExpense(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from hash.Hash,
 	cancel hash.Hash,
 	signatures []signature.RingSignature,
@@ -78,7 +78,7 @@ func createExpense(
 
 func createExpenseWithRemaining(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from hash.Hash,
 	cancel hash.Hash,
 	signatures []signature.RingSignature,
@@ -89,7 +89,7 @@ func createExpenseWithRemaining(
 
 func createExpenseInternally(
 	immutable entities.Immutable,
-	amount uint,
+	amount uint64,
 	from hash.Hash,
 	cancel hash.Hash,
 	signatures []signature.RingSignature,
@@ -113,7 +113,7 @@ func (obj *expense) Hash() hash.Hash {
 }
 
 // Amount returns the amount
-func (obj *expense) Amount() uint {
+func (obj *expense) Amount() uint64 {
 	return obj.amount
 }
 

@@ -42,7 +42,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	WithAmount(amount uint) Builder
+	WithAmount(amount uint64) Builder
 	From(from hash.Hash) Builder
 	WithCancel(cancel hash.Hash) Builder
 	WithSignatures(signatures []signature.RingSignature) Builder
@@ -54,7 +54,7 @@ type Builder interface {
 // Expense represents an expense
 type Expense interface {
 	entities.Immutable
-	Amount() uint
+	Amount() uint64
 	From() hash.Hash
 	Cancel() hash.Hash
 	Signatures() []signature.RingSignature

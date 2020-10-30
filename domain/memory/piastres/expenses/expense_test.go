@@ -5,11 +5,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 func TestExpense_Success(t *testing.T) {
@@ -32,7 +32,7 @@ func TestExpense_Success(t *testing.T) {
 	treeshold := uint(51)
 	lock := locks.CreateLockForTests(shareholders, treeshold)
 
-	billAmount := uint(56)
+	billAmount := uint64(56)
 	bill := bills.CreateBillForTests(lock, billAmount)
 
 	cancelTreeshold := uint(22)

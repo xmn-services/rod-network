@@ -15,7 +15,7 @@ func TestExpense_Success(t *testing.T) {
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
 	from, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	cancel, _ := hashAdapter.FromBytes([]byte("to build the cancel hash..."))
-	amount := uint(56)
+	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
 	pk := signature.NewPrivateKeyFactory().Create()
@@ -101,7 +101,7 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 	from, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	cancel, _ := hashAdapter.FromBytes([]byte("to build the cancel hash..."))
 	remaining, _ := hashAdapter.FromBytes([]byte("to build the remaining hash..."))
-	amount := uint(56)
+	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
 	pk := signature.NewPrivateKeyFactory().Create()

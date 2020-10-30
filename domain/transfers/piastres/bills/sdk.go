@@ -42,7 +42,7 @@ type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
 	WithLock(lock hash.Hash) Builder
-	WithAmount(amount uint) Builder
+	WithAmount(amount uint64) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Bill, error)
 }
@@ -51,7 +51,7 @@ type Builder interface {
 type Bill interface {
 	entities.Immutable
 	Lock() hash.Hash
-	Amount() uint
+	Amount() uint64
 }
 
 // Repository represents a bill repository

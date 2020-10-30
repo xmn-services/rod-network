@@ -6,7 +6,7 @@ import (
 
 type jsonExpense struct {
 	Hash       string    `json:"hash"`
-	Amount     uint      `json:"amount"`
+	Amount     uint64    `json:"amount"`
 	From       string    `json:"from"`
 	Cancel     string    `json:"cancel"`
 	Signatures []string  `json:"signatures"`
@@ -37,7 +37,7 @@ func createJSONExpenseFromExpense(ins Expense) *jsonExpense {
 
 func createJSONExpense(
 	hash string,
-	amount uint,
+	amount uint64,
 	from string,
 	cancel string,
 	signatures []string,

@@ -3,9 +3,9 @@ package mined
 import (
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
 )
 
 type block struct {

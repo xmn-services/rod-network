@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_bill "github.com/xmn-services/rod-network/domain/transfers/piastres/bills"
+	"github.com/xmn-services/rod-network/libs/file"
 )
 
 // CreateBillForTests creates a bill for tests
-func CreateBillForTests(lock locks.Lock, amount uint) Bill {
+func CreateBillForTests(lock locks.Lock, amount uint64) Bill {
 	createdOn := time.Now().UTC()
 	ins, err := NewBuilder().Create().WithLock(lock).WithAmount(amount).CreatedOn(createdOn).Now()
 	if err != nil {

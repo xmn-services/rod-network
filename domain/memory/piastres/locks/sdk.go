@@ -3,12 +3,12 @@ package locks
 import (
 	"time"
 
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	transfer_lock "github.com/xmn-services/rod-network/domain/transfers/piastres/locks"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/libs/hashtree"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
-	transfer_lock "github.com/xmn-services/rod-network/domain/transfers/piastres/locks"
 )
 
 // NewService creates a new service instance
