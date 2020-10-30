@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
-func TestTransaction_Success(t *testing.T) {
+func TestTransaction_withFees_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 
 	// shareholder's PK:
@@ -54,14 +54,18 @@ func TestTransaction_Success(t *testing.T) {
 		return
 	}
 
-	trxExpense := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
+	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
 		trxExpenseSig,
 	})
+
+	trxFees := []expenses.Expense{
+		trxFee,
+	}
 
 	// transaction:
 	executesOnTrigger := true
 	amountPubKeyInRing := uint(20)
-	trxIns, _ := CreateTransactionWithExpenseForTests(amountPubKeyInRing, executesOnTrigger, trxExpense)
+	trxIns, _ := CreateTransactionWithFeesForTests(amountPubKeyInRing, executesOnTrigger, trxFees)
 	if err != nil {
 		t.Errorf(err.Error())
 		return

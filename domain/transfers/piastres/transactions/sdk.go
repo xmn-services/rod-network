@@ -43,9 +43,8 @@ type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
 	TriggersOn(triggersOn time.Time) Builder
-	ExecutesOnTrigger() Builder
-	WithFees(fees hash.Hash) Builder
-	WithExpense(expense hash.Hash) Builder
+	WithFees(fees []hash.Hash) Builder
+	WithBucket(bucket hash.Hash) Builder
 	WithCancel(cancel hash.Hash) Builder
 	WithSignature(signature signature.RingSignature) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -57,13 +56,12 @@ type Transaction interface {
 	entities.Immutable
 	Signature() signature.RingSignature
 	TriggersOn() time.Time
-	ExecutesOnTrigger() bool
-	IsExpense() bool
-	Expense() *hash.Hash
+	IsBucket() bool
+	Bucket() *hash.Hash
 	IsCancel() bool
 	Cancel() *hash.Hash
 	HasFees() bool
-	Fees() *hash.Hash
+	Fees() []hash.Hash
 }
 
 // Repository represents a transaction repository

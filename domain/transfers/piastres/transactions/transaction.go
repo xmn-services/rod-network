@@ -10,13 +10,12 @@ import (
 )
 
 type transaction struct {
-	immutable         entities.Immutable
-	signature         signature.RingSignature
-	triggersOn        time.Time
-	executesOnTrigger bool
-	expense           *hash.Hash
-	cancel            *hash.Hash
-	fees              *hash.Hash
+	immutable  entities.Immutable
+	signature  signature.RingSignature
+	triggersOn time.Time
+	bucket     *hash.Hash
+	cancel     *hash.Hash
+	fees       []hash.Hash
 }
 
 func createTransactionFromJSON(ins *jsonTransaction) (Transaction, error) {
@@ -39,22 +38,27 @@ func createTransactionFromJSON(ins *jsonTransaction) (Transaction, error) {
 		WithSignature(sig).
 		CreatedOn(ins.CreatedOn)
 
-	if ins.Fees != "" {
-		fees, err := hashAdapter.FromString(ins.Fees)
-		if err != nil {
-			return nil, err
+	if len(ins.Fees) > 0 {
+		fees := []hash.Hash{}
+		for _, oneFee := range ins.Fees {
+			fee, err := hashAdapter.FromString(oneFee)
+			if err != nil {
+				return nil, err
+			}
+
+			fees = append(fees, *fee)
 		}
 
-		builder.WithFees(*fees)
+		builder.WithFees(fees)
 	}
 
-	if ins.Expense != "" {
-		expense, err := hashAdapter.FromString(ins.Expense)
+	if ins.Bucket != "" {
+		bucket, err := hashAdapter.FromString(ins.Bucket)
 		if err != nil {
 			return nil, err
 		}
 
-		builder.WithExpense(*expense)
+		builder.WithBucket(*bucket)
 	}
 
 	if ins.Cancel != "" {
@@ -66,72 +70,71 @@ func createTransactionFromJSON(ins *jsonTransaction) (Transaction, error) {
 		builder.WithCancel(*cancel)
 	}
 
-	if ins.ExecutesOnTrigger {
-		builder.ExecutesOnTrigger()
-	}
-
 	return builder.Now()
 }
 
-func createTransactionWithExpense(
+func createTransactionWithBucket(
 	immutable entities.Immutable,
 	signature signature.RingSignature,
 	triggersOn time.Time,
-	executesOnTrigger bool,
-	expense *hash.Hash,
+	bucket *hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, signature, triggersOn, executesOnTrigger, expense, nil, nil)
+	return createTransactionInternally(immutable, signature, triggersOn, bucket, nil, nil)
 }
 
-func createTransactionWithExpenseAndFees(
+func createTransactionWithBucketAndFees(
 	immutable entities.Immutable,
 	signature signature.RingSignature,
 	triggersOn time.Time,
-	executesOnTrigger bool,
-	expense *hash.Hash,
-	fees *hash.Hash,
+	bucket *hash.Hash,
+	fees []hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, signature, triggersOn, executesOnTrigger, expense, nil, fees)
+	return createTransactionInternally(immutable, signature, triggersOn, bucket, nil, fees)
 }
 
 func createTransactionWithCancel(
 	immutable entities.Immutable,
 	signature signature.RingSignature,
 	triggersOn time.Time,
-	executesOnTrigger bool,
 	cancel *hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, signature, triggersOn, executesOnTrigger, nil, cancel, nil)
+	return createTransactionInternally(immutable, signature, triggersOn, nil, cancel, nil)
 }
 
 func createTransactionWithCancelAndFees(
 	immutable entities.Immutable,
 	signature signature.RingSignature,
 	triggersOn time.Time,
-	executesOnTrigger bool,
 	cancel *hash.Hash,
-	fees *hash.Hash,
+	fees []hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, signature, triggersOn, executesOnTrigger, nil, cancel, fees)
+	return createTransactionInternally(immutable, signature, triggersOn, nil, cancel, fees)
+}
+
+func createTransactionWithFees(
+	immutable entities.Immutable,
+	signature signature.RingSignature,
+	triggersOn time.Time,
+	fees []hash.Hash,
+) Transaction {
+	return createTransactionInternally(immutable, signature, triggersOn, nil, nil, fees)
 }
 
 func createTransactionInternally(
 	immutable entities.Immutable,
 	signature signature.RingSignature,
 	triggersOn time.Time,
-	executesOnTrigger bool,
-	expense *hash.Hash,
+	bucket *hash.Hash,
 	cancel *hash.Hash,
-	fees *hash.Hash,
+	fees []hash.Hash,
 ) Transaction {
 	out := transaction{
-		immutable:         immutable,
-		signature:         signature,
-		triggersOn:        triggersOn,
-		executesOnTrigger: executesOnTrigger,
-		expense:           expense,
-		cancel:            cancel,
-		fees:              fees,
+		immutable:  immutable,
+		signature:  signature,
+		triggersOn: triggersOn,
+		bucket:     bucket,
+		cancel:     cancel,
+		fees:       fees,
 	}
 
 	return &out
@@ -152,24 +155,19 @@ func (obj *transaction) TriggersOn() time.Time {
 	return obj.triggersOn
 }
 
-// ExecutesOnTrigger returns true if executes on trigger, false if cancel
-func (obj *transaction) ExecutesOnTrigger() bool {
-	return obj.executesOnTrigger
-}
-
 // CreatedOn returns the creation time
 func (obj *transaction) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
 }
 
-// IsExpense returns true if the transaction is an expense, false otherwise
-func (obj *transaction) IsExpense() bool {
-	return obj.expense != nil
+// IsBucket returns true if the transaction is a bucket, false otherwise
+func (obj *transaction) IsBucket() bool {
+	return obj.bucket != nil
 }
 
-// Expense returns the expense hash, if any
-func (obj *transaction) Expense() *hash.Hash {
-	return obj.expense
+// Bucket returns the bucket hash, if any
+func (obj *transaction) Bucket() *hash.Hash {
+	return obj.bucket
 }
 
 // IsCancel returns true if the transaction is a cancel, false otherwise
@@ -188,7 +186,7 @@ func (obj *transaction) HasFees() bool {
 }
 
 // Fees returns the fees, if any
-func (obj *transaction) Fees() *hash.Hash {
+func (obj *transaction) Fees() []hash.Hash {
 	return obj.fees
 }
 
@@ -215,9 +213,8 @@ func (obj *transaction) UnmarshalJSON(data []byte) error {
 	obj.immutable = insTransaction.immutable
 	obj.signature = insTransaction.signature
 	obj.triggersOn = insTransaction.triggersOn
-	obj.executesOnTrigger = insTransaction.executesOnTrigger
 	obj.fees = insTransaction.fees
-	obj.expense = insTransaction.expense
+	obj.bucket = insTransaction.bucket
 	obj.cancel = insTransaction.cancel
 	return nil
 }

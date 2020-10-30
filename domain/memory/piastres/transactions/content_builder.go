@@ -5,34 +5,25 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/cancels"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type contentBuilder struct {
-	hashAdapter       hash.Adapter
-	immutableBuilder  entities.ImmutableBuilder
-	triggersOn        *time.Time
-	executesOnTrigger bool
-	fees              expenses.Expense
-	expense           expenses.Expense
-	cancel            cancels.Cancel
+	hashAdapter hash.Adapter
+	triggersOn  *time.Time
+	element     Element
+	fees        []expenses.Expense
 }
 
 func createContentBuilder(
 	hashAdapter hash.Adapter,
-	immutableBuilder entities.ImmutableBuilder,
 ) ContentBuilder {
 	out := contentBuilder{
-		hashAdapter:       hashAdapter,
-		immutableBuilder:  immutableBuilder,
-		triggersOn:        nil,
-		executesOnTrigger: false,
-		fees:              nil,
-		expense:           nil,
-		cancel:            nil,
+		hashAdapter: hashAdapter,
+		triggersOn:  nil,
+		element:     nil,
+		fees:        nil,
 	}
 
 	return &out
@@ -40,65 +31,49 @@ func createContentBuilder(
 
 // Create initializes the builder
 func (app *contentBuilder) Create() ContentBuilder {
-	return createContentBuilder(app.hashAdapter, app.immutableBuilder)
+	return createContentBuilder(app.hashAdapter)
 }
 
-// TriggersOn adds a trigger time to the builder
+// TriggersOn adds a triggersOn to the builder
 func (app *contentBuilder) TriggersOn(triggersOn time.Time) ContentBuilder {
 	app.triggersOn = &triggersOn
 	return app
 }
 
-// ExecutesOnTrigger adds an executesOnTrigger flag to the builder
-func (app *contentBuilder) ExecutesOnTrigger() ContentBuilder {
-	app.executesOnTrigger = true
+// WithElement adds an element to the builder
+func (app *contentBuilder) WithElement(element Element) ContentBuilder {
+	app.element = element
 	return app
 }
 
-// WithFees add fees to the builder
-func (app *contentBuilder) WithFees(fees expenses.Expense) ContentBuilder {
+// WithFees adds fees to the builder
+func (app *contentBuilder) WithFees(fees []expenses.Expense) ContentBuilder {
 	app.fees = fees
-	return app
-}
-
-// WithExpense adds an expense to the builder
-func (app *contentBuilder) WithExpense(expense expenses.Expense) ContentBuilder {
-	app.expense = expense
-	return app
-}
-
-// WithCancel adds a cancel to the builder
-func (app *contentBuilder) WithCancel(cancel cancels.Cancel) ContentBuilder {
-	app.cancel = cancel
 	return app
 }
 
 // Now builds a new Content instance
 func (app *contentBuilder) Now() (Content, error) {
 	if app.triggersOn == nil {
-		return nil, errors.New("the triggersOn time is mandatory in order to build a Content instance")
+		return nil, errors.New("the triggersOn is mandatory in order to build a Content instance")
 	}
 
-	executesOnTrigger := "false"
-	if app.executesOnTrigger {
-		executesOnTrigger = "true"
+	if app.fees != nil && len(app.fees) <= 0 {
+		app.fees = nil
 	}
 
 	data := [][]byte{
-		[]byte(executesOnTrigger),
-		[]byte(strconv.Itoa(int(app.triggersOn.Nanosecond()))),
+		[]byte(strconv.Itoa(int(app.triggersOn.UnixNano()))),
+	}
+
+	if app.element != nil {
+		data = append(data, app.element.Hash().Bytes())
 	}
 
 	if app.fees != nil {
-		data = append(data, app.fees.Hash().Bytes())
-	}
-
-	if app.expense != nil {
-		data = append(data, app.expense.Hash().Bytes())
-	}
-
-	if app.cancel != nil {
-		data = append(data, app.cancel.Hash().Bytes())
+		for _, oneFee := range app.fees {
+			data = append(data, oneFee.Hash().Bytes())
+		}
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
@@ -106,44 +81,16 @@ func (app *contentBuilder) Now() (Content, error) {
 		return nil, err
 	}
 
+	if app.fees != nil && app.element != nil {
+		return createContentWithElementAndFees(*hsh, *app.triggersOn, app.element, app.fees), nil
+	}
+
 	if app.fees != nil {
-		if app.expense != nil {
-			return createContentWithExpenseAndFees(
-				*hsh,
-				*app.triggersOn,
-				app.executesOnTrigger,
-				app.expense,
-				app.fees,
-			), nil
-		}
-
-		if app.cancel != nil {
-			return createContentWithCancelAndFees(
-				*hsh,
-				*app.triggersOn,
-				app.executesOnTrigger,
-				app.cancel,
-				app.fees,
-			), nil
-		}
+		return createContentWithFees(*hsh, *app.triggersOn, app.fees), nil
 	}
 
-	if app.expense != nil {
-		return createContentWithExpense(
-			*hsh,
-			*app.triggersOn,
-			app.executesOnTrigger,
-			app.expense,
-		), nil
-	}
-
-	if app.cancel != nil {
-		return createContentWithCancel(
-			*hsh,
-			*app.triggersOn,
-			app.executesOnTrigger,
-			app.cancel,
-		), nil
+	if app.element != nil {
+		return createContentWithElement(*hsh, *app.triggersOn, app.element), nil
 	}
 
 	return nil, errors.New("the Content is invalid")

@@ -5,30 +5,31 @@ import (
 )
 
 type jsonTransaction struct {
-	Hash              string    `json:"hash"`
-	Signature         string    `json:"signature"`
-	TriggersOn        time.Time `json:"triggers_on"`
-	ExecutesOnTrigger bool      `json:"executes_on_trigger"`
-	Fees              string    `json:"fees"`
-	Expense           string    `json:"expense"`
-	Cancel            string    `json:"cancel"`
-	CreatedOn         time.Time `json:"created_on"`
+	Hash       string    `json:"hash"`
+	Signature  string    `json:"signature"`
+	TriggersOn time.Time `json:"triggers_on"`
+	Fees       []string  `json:"fees"`
+	Bucket     string    `json:"bucket"`
+	Cancel     string    `json:"cancel"`
+	CreatedOn  time.Time `json:"created_on"`
 }
 
 func createJSONTransactionFromTransaction(ins Transaction) *jsonTransaction {
 	hash := ins.Hash().String()
 	signature := ins.Signature().String()
 	triggersOn := ins.TriggersOn()
-	executesOnTrigger := ins.ExecutesOnTrigger()
 
-	fees := ""
+	strFees := []string{}
 	if ins.HasFees() {
-		fees = ins.Fees().String()
+		fees := ins.Fees()
+		for _, oneFee := range fees {
+			strFees = append(strFees, oneFee.String())
+		}
 	}
 
-	expense := ""
-	if ins.IsExpense() {
-		expense = ins.Expense().String()
+	bucket := ""
+	if ins.IsBucket() {
+		bucket = ins.Bucket().String()
 	}
 
 	cancel := ""
@@ -37,28 +38,26 @@ func createJSONTransactionFromTransaction(ins Transaction) *jsonTransaction {
 	}
 
 	createdOn := ins.CreatedOn()
-	return createJSONTransaction(hash, signature, triggersOn, executesOnTrigger, fees, expense, cancel, createdOn)
+	return createJSONTransaction(hash, signature, triggersOn, strFees, bucket, cancel, createdOn)
 }
 
 func createJSONTransaction(
 	hash string,
 	signature string,
 	triggersOn time.Time,
-	executesOnTrigger bool,
-	fees string,
-	expense string,
+	fees []string,
+	bucket string,
 	cancel string,
 	createdOn time.Time,
 ) *jsonTransaction {
 	out := jsonTransaction{
-		Hash:              hash,
-		Signature:         signature,
-		TriggersOn:        triggersOn,
-		ExecutesOnTrigger: executesOnTrigger,
-		Fees:              fees,
-		Expense:           expense,
-		Cancel:            cancel,
-		CreatedOn:         createdOn,
+		Hash:       hash,
+		Signature:  signature,
+		TriggersOn: triggersOn,
+		Fees:       fees,
+		Bucket:     bucket,
+		Cancel:     cancel,
+		CreatedOn:  createdOn,
 	}
 
 	return &out

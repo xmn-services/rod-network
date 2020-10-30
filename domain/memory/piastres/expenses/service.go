@@ -68,3 +68,15 @@ func (app *service) Save(expense Expense) error {
 
 	return app.trService.Save(trExpense)
 }
+
+// SaveAll saves a list of expenses
+func (app *service) SaveAll(expenses []Expense) error {
+	for _, oneExpense := range expenses {
+		err := app.Save(oneExpense)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

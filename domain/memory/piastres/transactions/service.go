@@ -43,25 +43,20 @@ func (app *service) Save(trx Transaction) error {
 	content := trx.Content()
 	if content.HasFees() {
 		fees := content.Fees()
-		err = app.expenseService.Save(fees)
+		err = app.expenseService.SaveAll(fees)
 		if err != nil {
 			return err
 		}
 	}
 
-	if content.IsExpense() {
-		expense := content.Expense()
-		err = app.expenseService.Save(expense)
-		if err != nil {
-			return err
-		}
-	}
-
-	if content.IsCancel() {
-		cancel := content.Cancel()
-		err = app.cancelService.Save(cancel)
-		if err != nil {
-			return err
+	if content.HasElement() {
+		element := content.Element()
+		if element.IsCancel() {
+			cancel := element.Cancel()
+			err = app.cancelService.Save(cancel)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

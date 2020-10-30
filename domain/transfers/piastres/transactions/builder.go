@@ -10,30 +10,28 @@ import (
 )
 
 type builder struct {
-	immutableBuilder  entities.ImmutableBuilder
-	hash              *hash.Hash
-	signature         signature.RingSignature
-	triggersOn        *time.Time
-	executesOnTrigger bool
-	fees              *hash.Hash
-	expense           *hash.Hash
-	cancel            *hash.Hash
-	createdOn         *time.Time
+	immutableBuilder entities.ImmutableBuilder
+	hash             *hash.Hash
+	signature        signature.RingSignature
+	triggersOn       *time.Time
+	fees             []hash.Hash
+	bucket           *hash.Hash
+	cancel           *hash.Hash
+	createdOn        *time.Time
 }
 
 func createBuilder(
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		immutableBuilder:  immutableBuilder,
-		hash:              nil,
-		signature:         nil,
-		triggersOn:        nil,
-		executesOnTrigger: false,
-		fees:              nil,
-		expense:           nil,
-		cancel:            nil,
-		createdOn:         nil,
+		immutableBuilder: immutableBuilder,
+		hash:             nil,
+		signature:        nil,
+		triggersOn:       nil,
+		fees:             nil,
+		bucket:           nil,
+		cancel:           nil,
+		createdOn:        nil,
 	}
 
 	return &out
@@ -56,21 +54,15 @@ func (app *builder) TriggersOn(triggersOn time.Time) Builder {
 	return app
 }
 
-// ExecutesOnTrigger flags the builder as an executesOnTrigger
-func (app *builder) ExecutesOnTrigger() Builder {
-	app.executesOnTrigger = true
-	return app
-}
-
 // WithFees adds fees to the builder
-func (app *builder) WithFees(fees hash.Hash) Builder {
-	app.fees = &fees
+func (app *builder) WithFees(fees []hash.Hash) Builder {
+	app.fees = fees
 	return app
 }
 
-// WithExpense adds an expense to the builder
-func (app *builder) WithExpense(expense hash.Hash) Builder {
-	app.expense = &expense
+// WithBucket adds a bucket to the builder
+func (app *builder) WithBucket(bucket hash.Hash) Builder {
+	app.bucket = &bucket
 	return app
 }
 
@@ -112,13 +104,12 @@ func (app *builder) Now() (Transaction, error) {
 	}
 
 	if app.fees != nil {
-		if app.expense != nil {
-			return createTransactionWithExpenseAndFees(
+		if app.bucket != nil {
+			return createTransactionWithBucketAndFees(
 				immutable,
 				app.signature,
 				*app.triggersOn,
-				app.executesOnTrigger,
-				app.expense,
+				app.bucket,
 				app.fees,
 			), nil
 		}
@@ -128,20 +119,25 @@ func (app *builder) Now() (Transaction, error) {
 				immutable,
 				app.signature,
 				*app.triggersOn,
-				app.executesOnTrigger,
 				app.cancel,
 				app.fees,
 			), nil
 		}
-	}
 
-	if app.expense != nil {
-		return createTransactionWithExpense(
+		return createTransactionWithFees(
 			immutable,
 			app.signature,
 			*app.triggersOn,
-			app.executesOnTrigger,
-			app.expense,
+			app.fees,
+		), nil
+	}
+
+	if app.bucket != nil {
+		return createTransactionWithBucket(
+			immutable,
+			app.signature,
+			*app.triggersOn,
+			app.bucket,
 		), nil
 	}
 
@@ -150,7 +146,6 @@ func (app *builder) Now() (Transaction, error) {
 			immutable,
 			app.signature,
 			*app.triggersOn,
-			app.executesOnTrigger,
 			app.cancel,
 		), nil
 	}

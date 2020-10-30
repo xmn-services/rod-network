@@ -2,6 +2,7 @@ package transactions
 
 import (
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type adapter struct {
@@ -23,7 +24,6 @@ func (app *adapter) ToTransfer(trx Transaction) (transfer_transaction.Transactio
 	hsh := trx.Hash()
 	content := trx.Content()
 	triggersOn := content.TriggersOn()
-	executesOnTrigger := content.ExecutesOnTrigger()
 	sig := trx.Signature()
 	createdOn := trx.CreatedOn()
 
@@ -34,22 +34,26 @@ func (app *adapter) ToTransfer(trx Transaction) (transfer_transaction.Transactio
 		CreatedOn(createdOn)
 
 	if content.HasFees() {
-		fees := content.Fees().Hash()
-		builder.WithFees(fees)
+		fees := content.Fees()
+		feeHashes := []hash.Hash{}
+		for _, oneFee := range fees {
+			feeHashes = append(feeHashes, oneFee.Hash())
+		}
+
+		builder.WithFees(feeHashes)
 	}
 
-	if content.IsCancel() {
-		cancel := content.Cancel().Hash()
-		builder.WithCancel(cancel)
-	}
+	if content.HasElement() {
+		element := content.Element()
+		if element.IsBucket() {
+			bucket := element.Bucket()
+			builder.WithBucket(*bucket)
+		}
 
-	if content.IsExpense() {
-		expense := content.Expense().Hash()
-		builder.WithExpense(expense)
-	}
-
-	if executesOnTrigger {
-		builder.ExecutesOnTrigger()
+		if element.IsCancel() {
+			cancel := element.Cancel().Hash()
+			builder.WithCancel(cancel)
+		}
 	}
 
 	return builder.Now()

@@ -3,12 +3,12 @@ package expenses
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // NewService creates a new service instance
@@ -99,9 +99,11 @@ type Content interface {
 // Repository represents an expense repository
 type Repository interface {
 	Retrieve(hash hash.Hash) (Expense, error)
+	RetrieveAll(hashes []hash.Hash) ([]Expense, error)
 }
 
 // Service represents the expense service
 type Service interface {
 	Save(expense Expense) error
+	SaveAll(expenses []Expense) error
 }

@@ -1,10 +1,10 @@
 package expenses
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {
@@ -72,4 +72,19 @@ func (app *repository) Retrieve(hash hash.Hash) (Expense, error) {
 
 	signatures := trExpense.Signatures()
 	return app.builder.Create().WithContent(content).WithSignatures(signatures).Now()
+}
+
+// RetrieveAll retrieves a list of expenses
+func (app *repository) RetrieveAll(hashes []hash.Hash) ([]Expense, error) {
+	out := []Expense{}
+	for _, oneHash := range hashes {
+		expense, err := app.Retrieve(oneHash)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, expense)
+	}
+
+	return out, nil
 }

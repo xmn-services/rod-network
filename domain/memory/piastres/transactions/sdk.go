@@ -3,12 +3,12 @@ package transactions
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/cancels"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
+	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // NewService creates a new service instance
@@ -30,7 +30,8 @@ func NewRepository(
 	trRepository transfer_transaction.Repository,
 ) Repository {
 	contentBuilder := NewContentBuilder()
-	return createRepository(builder, contentBuilder, expenseRepository, cancelRepository, trRepository)
+	elementBuilder := NewElementBuilder()
+	return createRepository(builder, contentBuilder, elementBuilder, expenseRepository, cancelRepository, trRepository)
 }
 
 // NewAdapter creates a new adapter instance
@@ -39,11 +40,15 @@ func NewAdapter() Adapter {
 	return createAdapter(trBuilder)
 }
 
+// NewElementBuilder creates a new element builder instance
+func NewElementBuilder() ElementBuilder {
+	return createElementBuilder()
+}
+
 // NewContentBuilder returns a new content builder instance
 func NewContentBuilder() ContentBuilder {
 	hashAdapter := hash.NewAdapter()
-	immutableBuilder := entities.NewImmutableBuilder()
-	return createContentBuilder(hashAdapter, immutableBuilder)
+	return createContentBuilder(hashAdapter)
 }
 
 // NewBuilder creates a new builder instance
@@ -82,10 +87,8 @@ type Transaction interface {
 type ContentBuilder interface {
 	Create() ContentBuilder
 	TriggersOn(triggersOn time.Time) ContentBuilder
-	ExecutesOnTrigger() ContentBuilder
-	WithFees(fees expenses.Expense) ContentBuilder
-	WithExpense(expense expenses.Expense) ContentBuilder
-	WithCancel(cancel cancels.Cancel) ContentBuilder
+	WithElement(element Element) ContentBuilder
+	WithFees(fees []expenses.Expense) ContentBuilder
 	Now() (Content, error)
 }
 
@@ -93,13 +96,27 @@ type ContentBuilder interface {
 type Content interface {
 	Hash() hash.Hash
 	TriggersOn() time.Time
-	ExecutesOnTrigger() bool
-	IsExpense() bool
-	Expense() expenses.Expense
+	HasElement() bool
+	Element() Element
+	HasFees() bool
+	Fees() []expenses.Expense
+}
+
+// ElementBuilder represents an element builder
+type ElementBuilder interface {
+	Create() ElementBuilder
+	WithCancel(cancel cancels.Cancel) ElementBuilder
+	WithBucket(bucket hash.Hash) ElementBuilder
+	Now() (Element, error)
+}
+
+// Element represents a transaction element
+type Element interface {
+	Hash() hash.Hash
 	IsCancel() bool
 	Cancel() cancels.Cancel
-	HasFees() bool
-	Fees() expenses.Expense
+	IsBucket() bool
+	Bucket() *hash.Hash
 }
 
 // Repository represents a transaction repository
