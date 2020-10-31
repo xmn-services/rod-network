@@ -143,6 +143,7 @@ func (app *current) update(buckets []buckets.Bucket) error {
 	seed := app.identity.Seed()
 	name := app.identity.Name()
 	root := app.identity.Root()
+	wallets := app.identity.Wallets()
 	createdOn := app.identity.CreatedOn()
 	lastUpdatedOn := app.identity.LastUpdatedOn()
 	builder := app.identityBuilder.Create().
@@ -150,13 +151,9 @@ func (app *current) update(buckets []buckets.Bucket) error {
 		WithName(name).
 		WithRoot(root).
 		WithBuckets(buckets).
+		WithWallets(wallets.All()).
 		CreatedOn(createdOn).
 		LastUpdatedOn(lastUpdatedOn)
-
-	if app.identity.HasWallets() {
-		wallets := app.identity.Wallets()
-		builder.WithWallets(wallets)
-	}
 
 	updatedIdentity, err := builder.Now()
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/xmn-services/rod-network/domain/memory/identities"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	wallet_bills "github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
@@ -25,7 +26,8 @@ type current struct {
 	genesisService     genesis.Service
 	identityRepository identities.Repository
 	walletBillBuilder  wallet_bills.Builder
-	walletBuilder      wallets.Builder
+	walletsBuilder     wallets.Builder
+	walletBuilder      wallet.Builder
 	identityBuilder    identities.Builder
 	identityService    identities.Service
 }
@@ -40,7 +42,8 @@ func createCurrent(
 	genesisService genesis.Service,
 	identityRepository identities.Repository,
 	walletBillBuilder wallet_bills.Builder,
-	walletBuilder wallets.Builder,
+	walletsBuilder wallets.Builder,
+	walletBuilder wallet.Builder,
 	identityBuilder identities.Builder,
 	identityService identities.Service,
 ) Current {
@@ -54,6 +57,7 @@ func createCurrent(
 		genesisService:     genesisService,
 		identityRepository: identityRepository,
 		walletBillBuilder:  walletBillBuilder,
+		walletsBuilder:     walletsBuilder,
 		walletBuilder:      walletBuilder,
 		identityBuilder:    identityBuilder,
 		identityService:    identityService,
@@ -141,12 +145,10 @@ func (app *current) Init(
 	root := identity.Root()
 	identityCreatedOn := identity.CreatedOn()
 	lastUpdatedOn := time.Now().UTC()
-	wallets := []wallets.Wallet{}
-	if identity.HasWallets() {
-		wallets = identity.Wallets()
-	}
 
+	wallets := identity.Wallets().All()
 	wallets = append(wallets, wallet)
+
 	identityBuilder := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root).WithWallets(wallets).CreatedOn(identityCreatedOn).LastUpdatedOn(lastUpdatedOn)
 	if identity.HasBuckets() {
 		buckets := identity.Buckets()
