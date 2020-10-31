@@ -17,6 +17,7 @@ type contentBuilder struct {
 	immutableBuilder entities.ImmutableBuilder
 	amount           uint64
 	from             []bills.Bill
+	lock      locks.Lock
 	remaining        locks.Lock
 	createdOn        *time.Time
 }
@@ -30,6 +31,7 @@ func createContentBuilder(
 		immutableBuilder: immutableBuilder,
 		amount:           0,
 		from:             nil,
+		lock: nil,
 		remaining:        nil,
 		createdOn:        nil,
 	}
@@ -54,6 +56,12 @@ func (app *contentBuilder) From(from []bills.Bill) ContentBuilder {
 	return app
 }
 
+// WithLock adds a new lock to the contentBuilder
+func (app *contentBuilder) WithLock(lock locks.Lock) ContentBuilder {
+	app.lock = lock
+	return app
+}
+
 // WithRemaining adds a remaining lock to the contentBuilder
 func (app *contentBuilder) WithRemaining(remaining locks.Lock) ContentBuilder {
 	app.remaining = remaining
@@ -70,6 +78,10 @@ func (app *contentBuilder) CreatedOn(createdOn time.Time) ContentBuilder {
 func (app *contentBuilder) Now() (Content, error) {
 	if app.from == nil {
 		return nil, errors.New("the from bill is mandatory in order to build a Content instance")
+	}
+
+	if app.lock == nil {
+		return nil, errors.New("the lock is mandatory in order to build a Content instance")
 	}
 
 	total := uint64(0)
@@ -90,6 +102,7 @@ func (app *contentBuilder) Now() (Content, error) {
 	}
 
 	data := [][]byte{
+		app.lock.Hash().Bytes(),
 		[]byte(strconv.Itoa(int(app.amount))),
 	}
 
@@ -112,8 +125,8 @@ func (app *contentBuilder) Now() (Content, error) {
 	}
 
 	if app.remaining != nil {
-		return createContentWithRemaining(immutable, app.amount, app.from, app.remaining), nil
+		return createContentWithRemaining(immutable, app.amount, app.from, app.lock, app.remaining), nil
 	}
 
-	return createContent(immutable, app.amount, app.from), nil
+	return createContent(immutable, app.amount, app.from, app.lock), nil
 }

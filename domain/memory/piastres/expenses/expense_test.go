@@ -38,7 +38,7 @@ func TestExpense_Success(t *testing.T) {
 	amount := billAmount - 1
 	content := CreateContentForTests(amount, []bills.Bill{
 		bill,
-	})
+	}, lock)
 
 	ring := []signature.PublicKey{
 		firstPK.PublicKey(),

@@ -47,6 +47,12 @@ func (app *service) Save(expense Expense) error {
 		return err
 	}
 
+	lock := content.Lock()
+	err = app.lockService.Save(lock)
+	if err != nil {
+		return err
+	}
+
 	if content.HasRemaining() {
 		remaining := content.Remaining()
 		err = app.lockService.Save(remaining)

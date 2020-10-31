@@ -14,6 +14,7 @@ type content struct {
 	immutable entities.Immutable
 	amount    uint64
 	from      []bills.Bill
+	lock      locks.Lock
 	remaining locks.Lock
 }
 
@@ -31,8 +32,14 @@ func createContentFromJSON(ins *JSONContent) (Content, error) {
 	}
 
 	locksAdapter := locks.NewAdapter()
+	lock, err := locksAdapter.ToLock(ins.Lock)
+	if err != nil {
+		return nil, err
+	}
+
 	builder := NewContentBuilder().Create().
 		From(from).
+		WithLock(lock).
 		WithAmount(ins.Amount).
 		CreatedOn(ins.CreatedOn)
 
@@ -52,29 +59,33 @@ func createContent(
 	immutable entities.Immutable,
 	amount uint64,
 	from []bills.Bill,
+	lock locks.Lock,
 ) Content {
-	return createContentInternally(immutable, amount, from, nil)
+	return createContentInternally(immutable, amount, from, lock, nil)
 }
 
 func createContentWithRemaining(
 	immutable entities.Immutable,
 	amount uint64,
 	from []bills.Bill,
+	lock locks.Lock,
 	remaining locks.Lock,
 ) Content {
-	return createContentInternally(immutable, amount, from, remaining)
+	return createContentInternally(immutable, amount, from, lock, remaining)
 }
 
 func createContentInternally(
 	immutable entities.Immutable,
 	amount uint64,
 	from []bills.Bill,
+	lock locks.Lock,
 	remaining locks.Lock,
 ) Content {
 	out := content{
 		immutable: immutable,
 		amount:    amount,
 		from:      from,
+		lock:      lock,
 		remaining: remaining,
 	}
 
@@ -94,6 +105,11 @@ func (obj *content) Amount() uint64 {
 // From returns the from bill
 func (obj *content) From() []bills.Bill {
 	return obj.from
+}
+
+// Lock returns the new lock
+func (obj *content) Lock() locks.Lock {
+	return obj.lock
 }
 
 // HasRemaining returns ture if there is a remaining lock, false otherwise
@@ -134,6 +150,7 @@ func (obj *content) UnmarshalJSON(data []byte) error {
 	obj.immutable = insExpense.immutable
 	obj.amount = insExpense.amount
 	obj.from = insExpense.from
+	obj.lock = insExpense.lock
 	obj.remaining = insExpense.remaining
 	return nil
 }

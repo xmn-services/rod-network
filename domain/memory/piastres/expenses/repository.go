@@ -46,9 +46,15 @@ func (app *repository) Retrieve(hash hash.Hash) (Expense, error) {
 		return nil, err
 	}
 
+	lockHash := trExpense.Lock()
+	lock, err := app.lockRepository.Retrieve(lockHash)
+	if err != nil {
+		return nil, err
+	}
+
 	amount := trExpense.Amount()
 	createdOn := trExpense.CreatedOn()
-	builder := app.contentBuilder.Create().WithAmount(amount).CreatedOn(createdOn).From(bills)
+	builder := app.contentBuilder.Create().WithAmount(amount).CreatedOn(createdOn).From(bills).WithLock(lock)
 	if trExpense.HasRemaining() {
 		lockHash := trExpense.Remaining()
 		lock, err := app.lockRepository.Retrieve(*lockHash)

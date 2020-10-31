@@ -24,9 +24,9 @@ func CreateExpenseForTests(content Content, signatures [][]signature.RingSignatu
 }
 
 // CreateContentForTests creates an expense instance for tests
-func CreateContentForTests(amount uint64, from []bills.Bill) Content {
+func CreateContentForTests(amount uint64, from []bills.Bill, lock locks.Lock) Content {
 	createdOn := time.Now().UTC()
-	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).CreatedOn(createdOn).Now()
+	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithLock(lock).CreatedOn(createdOn).Now()
 	if err != nil {
 		panic(err)
 	}

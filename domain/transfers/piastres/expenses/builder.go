@@ -14,6 +14,7 @@ type builder struct {
 	hash             *hash.Hash
 	amount           uint64
 	from             []hash.Hash
+	lock             *hash.Hash
 	signatures       [][]signature.RingSignature
 	remaining        *hash.Hash
 	createdOn        *time.Time
@@ -27,6 +28,7 @@ func createBuilder(
 		hash:             nil,
 		amount:           0,
 		from:             nil,
+		lock:             nil,
 		signatures:       nil,
 		remaining:        nil,
 		createdOn:        nil,
@@ -58,6 +60,12 @@ func (app *builder) From(from []hash.Hash) Builder {
 	return app
 }
 
+// WithLock adds a lock to the builder
+func (app *builder) WithLock(lock hash.Hash) Builder {
+	app.lock = &lock
+	return app
+}
+
 // WithSignatures adds signatures hash to the builder
 func (app *builder) WithSignatures(signatures [][]signature.RingSignature) Builder {
 	app.signatures = signatures
@@ -83,7 +91,11 @@ func (app *builder) Now() (Expense, error) {
 	}
 
 	if app.from == nil {
-		return nil, errors.New("the from hash is mandatory in order to build an Expense instance")
+		return nil, errors.New("the from hashes are mandatory in order to build an Expense instance")
+	}
+
+	if app.lock == nil {
+		return nil, errors.New("the lock hash is mandatory in order to build an Expense instance")
 	}
 
 	if len(app.from) <= 0 {
@@ -104,8 +116,8 @@ func (app *builder) Now() (Expense, error) {
 	}
 
 	if app.remaining != nil {
-		return createExpenseWithRemaining(immutable, app.amount, app.from, app.signatures, app.remaining), nil
+		return createExpenseWithRemaining(immutable, app.amount, app.from, *app.lock, app.signatures, app.remaining), nil
 	}
 
-	return createExpense(immutable, app.amount, app.from, app.signatures), nil
+	return createExpense(immutable, app.amount, app.from, *app.lock, app.signatures), nil
 }

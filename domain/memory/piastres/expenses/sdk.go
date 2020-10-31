@@ -80,6 +80,7 @@ type ContentBuilder interface {
 	Create() ContentBuilder
 	WithAmount(amount uint64) ContentBuilder
 	From(from []bills.Bill) ContentBuilder
+	WithLock(lock locks.Lock) ContentBuilder
 	WithRemaining(remaining locks.Lock) ContentBuilder
 	CreatedOn(createdOn time.Time) ContentBuilder
 	Now() (Content, error)
@@ -90,6 +91,7 @@ type Content interface {
 	entities.Immutable
 	Amount() uint64
 	From() []bills.Bill
+	Lock() locks.Lock
 	HasRemaining() bool
 	Remaining() locks.Lock
 }

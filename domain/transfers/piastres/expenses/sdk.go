@@ -44,6 +44,7 @@ type Builder interface {
 	WithHash(hash hash.Hash) Builder
 	WithAmount(amount uint64) Builder
 	From(from []hash.Hash) Builder
+	WithLock(lock hash.Hash) Builder
 	WithSignatures(signatures [][]signature.RingSignature) Builder
 	WithRemaining(remaining hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -55,6 +56,7 @@ type Expense interface {
 	entities.Immutable
 	Amount() uint64
 	From() []hash.Hash
+	Lock() hash.Hash
 	Signatures() [][]signature.RingSignature
 	HasRemaining() bool
 	Remaining() *hash.Hash

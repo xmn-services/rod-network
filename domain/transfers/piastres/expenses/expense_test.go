@@ -13,6 +13,7 @@ import (
 func TestExpense_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
+	lock, _ := hashAdapter.FromBytes([]byte("to build the lock hash..."))
 	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	amount := uint64(56)
 	createdOn := time.Now().UTC()
@@ -33,7 +34,7 @@ func TestExpense_Success(t *testing.T) {
 		*fromSingle,
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithAmount(amount).WithSignatures(signatures).CreatedOn(createdOn).Now()
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithLock(*lock).WithAmount(amount).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -47,6 +48,11 @@ func TestExpense_Success(t *testing.T) {
 	retFrom := expense.From()
 	if len(retFrom) != len(from) {
 		t.Errorf("%d from hashes were expectyed, %d returned", len(from), len(retFrom))
+		return
+	}
+
+	if !expense.Lock().Compare(*lock) {
+		t.Errorf("the lock hash is invalid")
 		return
 	}
 
@@ -99,6 +105,7 @@ func TestExpense_Success(t *testing.T) {
 func TestExpense_withRemaining_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
+	lock, _ := hashAdapter.FromBytes([]byte("to build the lock hash..."))
 	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	remaining, _ := hashAdapter.FromBytes([]byte("to build the remaining hash..."))
 	amount := uint64(56)
@@ -120,7 +127,7 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 		*fromSingle,
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithAmount(amount).WithRemaining(*remaining).WithSignatures(signatures).CreatedOn(createdOn).Now()
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithLock(*lock).WithAmount(amount).WithRemaining(*remaining).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -134,6 +141,11 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 	retFrom := expense.From()
 	if len(retFrom) != len(from) {
 		t.Errorf("%d from hashes were expectyed, %d returned", len(from), len(retFrom))
+		return
+	}
+
+	if !expense.Lock().Compare(*lock) {
+		t.Errorf("the lock hash is invalid")
 		return
 	}
 

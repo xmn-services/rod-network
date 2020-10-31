@@ -48,7 +48,7 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 		expFees := []expenses.Expense{}
 		for _, oneFee := range fees {
 			amount := oneFee.Amount()
-			//lock := oneFee.Lock()
+			feeLock := oneFee.Lock()
 			walletBills, shareHolders, treeshold, err := app.identity.Wallets().Fetch(amount)
 			if err != nil {
 				return err
@@ -71,7 +71,7 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 			}
 
 			createdOn := time.Now().UTC()
-			expenseContent, err := app.expenseContentBuilder.Create().WithAmount(amount).From(bills).WithRemaining(remaining).CreatedOn(createdOn).Now()
+			expenseContent, err := app.expenseContentBuilder.Create().WithAmount(amount).From(bills).WithLock(feeLock).WithRemaining(remaining).CreatedOn(createdOn).Now()
 			if err != nil {
 				return err
 			}
