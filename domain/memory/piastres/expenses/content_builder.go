@@ -16,8 +16,7 @@ type contentBuilder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	amount           uint64
-	from             bills.Bill
-	cancel           locks.Lock
+	from             []bills.Bill
 	remaining        locks.Lock
 	createdOn        *time.Time
 }
@@ -31,7 +30,6 @@ func createContentBuilder(
 		immutableBuilder: immutableBuilder,
 		amount:           0,
 		from:             nil,
-		cancel:           nil,
 		remaining:        nil,
 		createdOn:        nil,
 	}
@@ -51,14 +49,8 @@ func (app *contentBuilder) WithAmount(amount uint64) ContentBuilder {
 }
 
 // From adds a from bill to the contentBuilder
-func (app *contentBuilder) From(from bills.Bill) ContentBuilder {
+func (app *contentBuilder) From(from []bills.Bill) ContentBuilder {
 	app.from = from
-	return app
-}
-
-// WithCancel adds a cancel lock to the contentBuilder
-func (app *contentBuilder) WithCancel(cancel locks.Lock) ContentBuilder {
-	app.cancel = cancel
 	return app
 }
 
@@ -80,18 +72,18 @@ func (app *contentBuilder) Now() (Content, error) {
 		return nil, errors.New("the from bill is mandatory in order to build a Content instance")
 	}
 
-	if app.cancel == nil {
-		return nil, errors.New("the cancel lock is mandatory in order to build a Content instance")
+	total := uint64(0)
+	for _, oneBill := range app.from {
+		total += oneBill.Amount()
 	}
 
-	from := app.from.Amount()
-	if app.amount > from {
-		str := fmt.Sprintf("the amount (%d) cannot be larger than the from amount (%d)", app.amount, from)
+	if app.amount > total {
+		str := fmt.Sprintf("the amount (%d) cannot be larger than the from amount (%d)", app.amount, total)
 		return nil, errors.New(str)
 	}
 
 	if app.remaining != nil {
-		remaining := from - app.amount
+		remaining := total - app.amount
 		if remaining <= 0 {
 			return nil, errors.New("the remaining lock was expected to be nil since the bill was totally spent")
 		}
@@ -99,8 +91,10 @@ func (app *contentBuilder) Now() (Content, error) {
 
 	data := [][]byte{
 		[]byte(strconv.Itoa(int(app.amount))),
-		app.from.Hash().Bytes(),
-		app.cancel.Hash().Bytes(),
+	}
+
+	for _, oneBill := range app.from {
+		data = append(data, oneBill.Hash().Bytes())
 	}
 
 	if app.remaining != nil {
@@ -118,8 +112,8 @@ func (app *contentBuilder) Now() (Content, error) {
 	}
 
 	if app.remaining != nil {
-		return createContentWithRemaining(immutable, app.amount, app.from, app.cancel, app.remaining), nil
+		return createContentWithRemaining(immutable, app.amount, app.from, app.remaining), nil
 	}
 
-	return createContent(immutable, app.amount, app.from, app.cancel), nil
+	return createContent(immutable, app.amount, app.from), nil
 }

@@ -26,41 +26,41 @@ type current struct {
 	bucketRepository   buckets.Repository
 	bucketService      buckets.Service
 	identityService    identities.Service
-	identityBuilder identities.Builder
+	identityBuilder    identities.Builder
 	identity           identities.Identity
-	password string
+	password           string
 	chunkSizeInBytes   uint
 }
 
 func createCurrent(
-	hashAdapter        hash.Adapter,
-	pkFactory          encryption.Factory,
-	chunkBuilder       chunks.Builder,
-	fileBuilder        files.Builder,
+	hashAdapter hash.Adapter,
+	pkFactory encryption.Factory,
+	chunkBuilder chunks.Builder,
+	fileBuilder files.Builder,
 	informationBuilder informations.Builder,
-	bucketBuilder      buckets.Builder,
-	bucketRepository   buckets.Repository,
-	bucketService      buckets.Service,
-	identityService    identities.Service,
+	bucketBuilder buckets.Builder,
+	bucketRepository buckets.Repository,
+	bucketService buckets.Service,
+	identityService identities.Service,
 	identityBuilder identities.Builder,
-	identity           identities.Identity,
+	identity identities.Identity,
 	password string,
-	chunkSizeInBytes   uint,
+	chunkSizeInBytes uint,
 ) Current {
 	out := current{
-		hashAdapter    : hashAdapter,
-		pkFactory     : pkFactory,
-		chunkBuilder    : chunkBuilder,
-		fileBuilder    : fileBuilder,
-		informationBuilder : informationBuilder,
-		bucketBuilder     : bucketBuilder,
-		bucketRepository   : bucketRepository,
-		bucketService     : bucketService,
-		identityService  : identityService,
-		identityBuilder : identityBuilder,
-		identity          : identity,
-		password : password,
-		chunkSizeInBytes   : chunkSizeInBytes,
+		hashAdapter:        hashAdapter,
+		pkFactory:          pkFactory,
+		chunkBuilder:       chunkBuilder,
+		fileBuilder:        fileBuilder,
+		informationBuilder: informationBuilder,
+		bucketBuilder:      bucketBuilder,
+		bucketRepository:   bucketRepository,
+		bucketService:      bucketService,
+		identityService:    identityService,
+		identityBuilder:    identityBuilder,
+		identity:           identity,
+		password:           password,
+		chunkSizeInBytes:   chunkSizeInBytes,
 	}
 
 	return &out
@@ -146,12 +146,12 @@ func (app *current) update(buckets []buckets.Bucket) error {
 	createdOn := app.identity.CreatedOn()
 	lastUpdatedOn := app.identity.LastUpdatedOn()
 	builder := app.identityBuilder.Create().
-	WithSeed(seed).
-	WithName(name).
-	WithRoot(root).
-	WithBuckets(buckets).
-	CreatedOn(createdOn).
-	LastUpdatedOn(lastUpdatedOn)
+		WithSeed(seed).
+		WithName(name).
+		WithRoot(root).
+		WithBuckets(buckets).
+		CreatedOn(createdOn).
+		LastUpdatedOn(lastUpdatedOn)
 
 	if app.identity.HasWallets() {
 		wallets := app.identity.Wallets()

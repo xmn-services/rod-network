@@ -3,10 +3,10 @@ package mined
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/links"
 	transfer_mined_link "github.com/xmn-services/rod-network/domain/transfers/piastres/links/mined"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // NewService creates a new service instance

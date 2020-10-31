@@ -49,3 +49,15 @@ func (app *service) Save(bill Bill) error {
 
 	return app.trService.Save(trBill)
 }
+
+// SaveAll saves a list of bills
+func (app *service) SaveAll(bills []Bill) error {
+	for _, oneBill := range bills {
+		err := app.Save(oneBill)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

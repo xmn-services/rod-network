@@ -14,7 +14,7 @@ import (
 )
 
 // CreateExpenseForTests creates an expense instance for tests
-func CreateExpenseForTests(content Content, signatures []signature.RingSignature) Expense {
+func CreateExpenseForTests(content Content, signatures [][]signature.RingSignature) Expense {
 	ins, err := NewBuilder().Create().WithContent(content).WithSignatures(signatures).Now()
 	if err != nil {
 		panic(err)
@@ -24,9 +24,9 @@ func CreateExpenseForTests(content Content, signatures []signature.RingSignature
 }
 
 // CreateContentForTests creates an expense instance for tests
-func CreateContentForTests(amount uint64, from bills.Bill, cancel locks.Lock) Content {
+func CreateContentForTests(amount uint64, from []bills.Bill) Content {
 	createdOn := time.Now().UTC()
-	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithCancel(cancel).CreatedOn(createdOn).Now()
+	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).CreatedOn(createdOn).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -35,9 +35,9 @@ func CreateContentForTests(amount uint64, from bills.Bill, cancel locks.Lock) Co
 }
 
 // CreateContentWithRemainingForTests creates an expense instance with remaining for tests
-func CreateContentWithRemainingForTests(amount uint64, from bills.Bill, cancel locks.Lock, remaining locks.Lock) Content {
+func CreateContentWithRemainingForTests(amount uint64, from []bills.Bill, remaining locks.Lock) Content {
 	createdOn := time.Now().UTC()
-	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithCancel(cancel).WithRemaining(remaining).CreatedOn(createdOn).Now()
+	ins, err := NewContentBuilder().Create().WithAmount(amount).From(from).WithRemaining(remaining).CreatedOn(createdOn).Now()
 	if err != nil {
 		panic(err)
 	}

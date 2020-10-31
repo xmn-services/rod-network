@@ -40,14 +40,12 @@ func TestBlock_Success(t *testing.T) {
 	trxExpenseBillAmount := uint64(11)
 	trxExpenseBill := bills.CreateBillForTests(lock, trxExpenseBillAmount)
 
-	// transaction expense cancel lock:
-	cancelTreeshold := uint(1)
-	trxExpenseCancelLock := locks.CreateLockForTests(holders, cancelTreeshold)
-
 	// transaction expense:
-	trxExpenseContent := expenses.CreateContentForTests(trxExpenseBillAmount, trxExpenseBill, trxExpenseCancelLock)
+	trxExpenseContent := expenses.CreateContentForTests(trxExpenseBillAmount, []bills.Bill{
+		trxExpenseBill,
+	})
 
-	trxExpenseSig, err := pk.RingSign(trxExpenseContent.From().Lock().Hash().String(), []signature.PublicKey{
+	trxExpenseSig, err := pk.RingSign(trxExpenseBill.Lock().Hash().String(), []signature.PublicKey{
 		pubKey,
 	})
 
@@ -56,8 +54,10 @@ func TestBlock_Success(t *testing.T) {
 		return
 	}
 
-	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
-		trxExpenseSig,
+	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, [][]signature.RingSignature{
+		[]signature.RingSignature{
+			trxExpenseSig,
+		},
 	})
 
 	trxFees := []expenses.Expense{
@@ -67,11 +67,7 @@ func TestBlock_Success(t *testing.T) {
 	// transaction:
 	executesOnTrigger := true
 	amountPubKeyInRing := uint(20)
-	trxIns, _ := transactions.CreateTransactionWithFeesForTests(amountPubKeyInRing, executesOnTrigger, trxFees)
-	if err != nil {
-		t.Errorf(err.Error())
-		return
-	}
+	trxIns := transactions.CreateTransactionWithFeesForTests(amountPubKeyInRing, executesOnTrigger, trxFees)
 
 	// transactions:
 	trx := []transactions.Transaction{

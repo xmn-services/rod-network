@@ -13,8 +13,7 @@ import (
 func TestExpense_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	from, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
-	cancel, _ := hashAdapter.FromBytes([]byte("to build the cancel hash..."))
+	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
@@ -24,11 +23,17 @@ func TestExpense_Success(t *testing.T) {
 	}
 
 	sig, _ := pk.RingSign(hsh.String(), ring)
-	signatures := []signature.RingSignature{
-		sig,
+	signatures := [][]signature.RingSignature{
+		[]signature.RingSignature{
+			sig,
+		},
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(*from).WithAmount(amount).WithSignatures(signatures).WithCancel(*cancel).CreatedOn(createdOn).Now()
+	from := []hash.Hash{
+		*fromSingle,
+	}
+
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithAmount(amount).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -39,13 +44,9 @@ func TestExpense_Success(t *testing.T) {
 		return
 	}
 
-	if !expense.From().Compare(*from) {
-		t.Errorf("the from hash is invalid")
-		return
-	}
-
-	if !expense.Cancel().Compare(*cancel) {
-		t.Errorf("the cancel hash is invalid")
+	retFrom := expense.From()
+	if len(retFrom) != len(from) {
+		t.Errorf("%d from hashes were expectyed, %d returned", len(from), len(retFrom))
 		return
 	}
 
@@ -98,8 +99,7 @@ func TestExpense_Success(t *testing.T) {
 func TestExpense_withRemaining_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	from, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
-	cancel, _ := hashAdapter.FromBytes([]byte("to build the cancel hash..."))
+	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	remaining, _ := hashAdapter.FromBytes([]byte("to build the remaining hash..."))
 	amount := uint64(56)
 	createdOn := time.Now().UTC()
@@ -110,11 +110,17 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 	}
 
 	sig, _ := pk.RingSign(hsh.String(), ring)
-	signatures := []signature.RingSignature{
-		sig,
+	signatures := [][]signature.RingSignature{
+		[]signature.RingSignature{
+			sig,
+		},
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(*from).WithAmount(amount).WithRemaining(*remaining).WithSignatures(signatures).WithCancel(*cancel).CreatedOn(createdOn).Now()
+	from := []hash.Hash{
+		*fromSingle,
+	}
+
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithAmount(amount).WithRemaining(*remaining).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -125,13 +131,9 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 		return
 	}
 
-	if !expense.From().Compare(*from) {
-		t.Errorf("the from hash is invalid")
-		return
-	}
-
-	if !expense.Cancel().Compare(*cancel) {
-		t.Errorf("the cancel hash is invalid")
+	retFrom := expense.From()
+	if len(retFrom) != len(from) {
+		t.Errorf("%d from hashes were expectyed, %d returned", len(from), len(retFrom))
 		return
 	}
 

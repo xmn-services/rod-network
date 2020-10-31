@@ -6,7 +6,7 @@ import (
 
 	"github.com/xmn-services/rod-network/domain/memory/identities"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
-	wallet_bills "github.com/xmn-services/rod-network/domain/memory/identities/wallets/bills"
+	wallet_bills "github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"

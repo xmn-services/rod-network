@@ -1,9 +1,9 @@
 package bills
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_bill "github.com/xmn-services/rod-network/domain/transfers/piastres/bills"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {
@@ -42,4 +42,19 @@ func (app *repository) Retrieve(hsh hash.Hash) (Bill, error) {
 	amount := trBill.Amount()
 	createdOn := trBill.CreatedOn()
 	return app.builder.Create().WithLock(lock).WithAmount(amount).CreatedOn(createdOn).Now()
+}
+
+// RetrieveAll retrieves a list of bills
+func (app *repository) RetrieveAll(hashes []hash.Hash) ([]Bill, error) {
+	out := []Bill{}
+	for _, oneHash := range hashes {
+		bill, err := app.Retrieve(oneHash)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, bill)
+	}
+
+	return out, nil
 }

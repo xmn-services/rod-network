@@ -3,10 +3,8 @@ package transactions
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/piastres/cancels"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
@@ -15,23 +13,19 @@ import (
 func NewService(
 	repository Repository,
 	expenseService expenses.Service,
-	cancelService cancels.Service,
 	trService transfer_transaction.Service,
 ) Service {
 	adapter := NewAdapter()
-	return createService(adapter, repository, expenseService, cancelService, trService)
+	return createService(adapter, repository, expenseService, trService)
 }
 
 // NewRepository creates a new repository instance
 func NewRepository(
-	builder Builder,
 	expenseRepository expenses.Repository,
-	cancelRepository cancels.Repository,
 	trRepository transfer_transaction.Repository,
 ) Repository {
-	contentBuilder := NewContentBuilder()
-	elementBuilder := NewElementBuilder()
-	return createRepository(builder, contentBuilder, elementBuilder, expenseRepository, cancelRepository, trRepository)
+	builder := NewBuilder()
+	return createRepository(builder, expenseRepository, trRepository)
 }
 
 // NewAdapter creates a new adapter instance
@@ -40,23 +34,11 @@ func NewAdapter() Adapter {
 	return createAdapter(trBuilder)
 }
 
-// NewElementBuilder creates a new element builder instance
-func NewElementBuilder() ElementBuilder {
-	return createElementBuilder()
-}
-
-// NewContentBuilder returns a new content builder instance
-func NewContentBuilder() ContentBuilder {
-	hashAdapter := hash.NewAdapter()
-	return createContentBuilder(hashAdapter)
-}
-
-// NewBuilder creates a new builder instance
-func NewBuilder(amountRingKeys uint) Builder {
+// NewBuilder returns a new transaction builder instance
+func NewBuilder() Builder {
 	hashAdapter := hash.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
-	pkFactory := signature.NewPrivateKeyFactory()
-	return createBuilder(hashAdapter, immutableBuilder, pkFactory, amountRingKeys)
+	return createBuilder(hashAdapter, immutableBuilder)
 }
 
 // Adapter returns the transaction adapter
@@ -69,9 +51,8 @@ type Adapter interface {
 // Builder represents a transaction builder
 type Builder interface {
 	Create() Builder
-	WithContent(content Content) Builder
-	WithSignature(signature signature.RingSignature) Builder
-	WithPrivateKey(pk signature.PrivateKey) Builder
+	WithBucket(bucket hash.Hash) Builder
+	WithFees(fees []expenses.Expense) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Transaction, error)
 }
@@ -79,44 +60,10 @@ type Builder interface {
 // Transaction represents a transaction
 type Transaction interface {
 	entities.Immutable
-	Content() Content
-	Signature() signature.RingSignature
-}
-
-// ContentBuilder represents a content builder instance
-type ContentBuilder interface {
-	Create() ContentBuilder
-	TriggersOn(triggersOn time.Time) ContentBuilder
-	WithElement(element Element) ContentBuilder
-	WithFees(fees []expenses.Expense) ContentBuilder
-	Now() (Content, error)
-}
-
-// Content represents the content of a transaction
-type Content interface {
-	Hash() hash.Hash
-	TriggersOn() time.Time
-	HasElement() bool
-	Element() Element
+	HasBucket() bool
+	Bucket() *hash.Hash
 	HasFees() bool
 	Fees() []expenses.Expense
-}
-
-// ElementBuilder represents an element builder
-type ElementBuilder interface {
-	Create() ElementBuilder
-	WithCancel(cancel cancels.Cancel) ElementBuilder
-	WithBucket(bucket hash.Hash) ElementBuilder
-	Now() (Element, error)
-}
-
-// Element represents a transaction element
-type Element interface {
-	Hash() hash.Hash
-	IsCancel() bool
-	Cancel() cancels.Cancel
-	IsBucket() bool
-	Bucket() *hash.Hash
 }
 
 // Repository represents a transaction repository

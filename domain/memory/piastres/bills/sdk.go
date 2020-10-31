@@ -60,9 +60,11 @@ type Bill interface {
 // Repository represents a bill repository
 type Repository interface {
 	Retrieve(hash hash.Hash) (Bill, error)
+	RetrieveAll(hashes []hash.Hash) ([]Bill, error)
 }
 
 // Service represents the bill service
 type Service interface {
 	Save(bill Bill) error
+	SaveAll(bills []Bill) error
 }

@@ -22,19 +22,14 @@ func createAdapter(
 // ToTransfer converts a transaction to a transfer transaction instance
 func (app *adapter) ToTransfer(trx Transaction) (transfer_transaction.Transaction, error) {
 	hsh := trx.Hash()
-	content := trx.Content()
-	triggersOn := content.TriggersOn()
-	sig := trx.Signature()
 	createdOn := trx.CreatedOn()
 
 	builder := app.trBuilder.Create().
 		WithHash(hsh).
-		TriggersOn(triggersOn).
-		WithSignature(sig).
 		CreatedOn(createdOn)
 
-	if content.HasFees() {
-		fees := content.Fees()
+	if trx.HasFees() {
+		fees := trx.Fees()
 		feeHashes := []hash.Hash{}
 		for _, oneFee := range fees {
 			feeHashes = append(feeHashes, oneFee.Hash())
@@ -43,17 +38,9 @@ func (app *adapter) ToTransfer(trx Transaction) (transfer_transaction.Transactio
 		builder.WithFees(feeHashes)
 	}
 
-	if content.HasElement() {
-		element := content.Element()
-		if element.IsBucket() {
-			bucket := element.Bucket()
-			builder.WithBucket(*bucket)
-		}
-
-		if element.IsCancel() {
-			cancel := element.Cancel().Hash()
-			builder.WithCancel(cancel)
-		}
+	if trx.HasBucket() {
+		bucket := trx.Bucket()
+		builder.WithBucket(*bucket)
 	}
 
 	return builder.Now()

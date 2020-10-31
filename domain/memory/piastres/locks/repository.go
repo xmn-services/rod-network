@@ -1,9 +1,9 @@
 package locks
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	transfer_lock "github.com/xmn-services/rod-network/domain/transfers/piastres/locks"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {

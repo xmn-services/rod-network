@@ -1,31 +1,22 @@
 package wallets
 
 import (
-	"time"
-
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/bills"
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/statements"
-	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 )
 
-// Builder represents a wallet builder
+// Builder represents a wallets builder
 type Builder interface {
 	Create() Builder
-	WithBills(bills []bills.Bill) Builder
-	WithStatement(statement statements.Statement) Builder
-	WithName(name string) Builder
-	WithDescription(description string) Builder
-	CreatedOn(createdOn time.Time) Builder
-	Now() (Wallet, error)
+	WithWallets(wallets []wallet.Wallet) Builder
+	Now() (Wallets, error)
 }
 
-// Wallet represents the wallet
-type Wallet interface {
-	entities.Immutable
-	Name() string
-	Statement() statements.Statement
-	HasBills() bool
-	Bills() []bills.Bill
-	HasDescription() bool
-	Description() string
+// Wallets represents wallets
+type Wallets interface {
+	All() []wallet.Wallet
+	Transact(trx transactions.Transaction) error
+	Fetch(amount uint64) ([]bills.Bill, []shareholders.ShareHolder, uint, error)
 }

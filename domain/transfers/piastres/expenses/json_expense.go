@@ -5,25 +5,33 @@ import (
 )
 
 type jsonExpense struct {
-	Hash       string    `json:"hash"`
-	Amount     uint64    `json:"amount"`
-	From       string    `json:"from"`
-	Cancel     string    `json:"cancel"`
-	Signatures []string  `json:"signatures"`
-	Remaining  string    `json:"remaining"`
-	CreatedOn  time.Time `json:"created_on"`
+	Hash       string     `json:"hash"`
+	Amount     uint64     `json:"amount"`
+	From       []string   `json:"from"`
+	Signatures [][]string `json:"signatures"`
+	Remaining  string     `json:"remaining"`
+	CreatedOn  time.Time  `json:"created_on"`
 }
 
 func createJSONExpenseFromExpense(ins Expense) *jsonExpense {
 	hash := ins.Hash().String()
 	amount := ins.Amount()
-	from := ins.From().String()
-	cancel := ins.Cancel().String()
 
-	signatures := []string{}
+	fromStrs := []string{}
+	from := ins.From()
+	for _, oneHash := range from {
+		fromStrs = append(fromStrs, oneHash.String())
+	}
+
+	signatures := [][]string{}
 	sigs := ins.Signatures()
-	for _, oneSig := range sigs {
-		signatures = append(signatures, oneSig.String())
+	for _, oneSigList := range sigs {
+		signaturesList := []string{}
+		for _, oneSig := range oneSigList {
+			signaturesList = append(signaturesList, oneSig.String())
+		}
+
+		signatures = append(signatures, signaturesList)
 	}
 
 	remaining := ""
@@ -32,15 +40,14 @@ func createJSONExpenseFromExpense(ins Expense) *jsonExpense {
 	}
 
 	createdOn := ins.CreatedOn()
-	return createJSONExpense(hash, amount, from, cancel, signatures, remaining, createdOn)
+	return createJSONExpense(hash, amount, fromStrs, signatures, remaining, createdOn)
 }
 
 func createJSONExpense(
 	hash string,
 	amount uint64,
-	from string,
-	cancel string,
-	signatures []string,
+	from []string,
+	signatures [][]string,
 	remaining string,
 	createdOn time.Time,
 ) *jsonExpense {
@@ -48,7 +55,6 @@ func createJSONExpense(
 		Hash:       hash,
 		Amount:     amount,
 		From:       from,
-		Cancel:     cancel,
 		Signatures: signatures,
 		Remaining:  remaining,
 		CreatedOn:  createdOn,

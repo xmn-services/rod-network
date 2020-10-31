@@ -43,9 +43,8 @@ type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
 	WithAmount(amount uint64) Builder
-	From(from hash.Hash) Builder
-	WithCancel(cancel hash.Hash) Builder
-	WithSignatures(signatures []signature.RingSignature) Builder
+	From(from []hash.Hash) Builder
+	WithSignatures(signatures [][]signature.RingSignature) Builder
 	WithRemaining(remaining hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Expense, error)
@@ -55,9 +54,8 @@ type Builder interface {
 type Expense interface {
 	entities.Immutable
 	Amount() uint64
-	From() hash.Hash
-	Cancel() hash.Hash
-	Signatures() []signature.RingSignature
+	From() []hash.Hash
+	Signatures() [][]signature.RingSignature
 	HasRemaining() bool
 	Remaining() *hash.Hash
 }

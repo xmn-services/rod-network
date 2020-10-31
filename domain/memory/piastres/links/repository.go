@@ -1,9 +1,9 @@
 package links
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
 	transfer_link "github.com/xmn-services/rod-network/domain/transfers/piastres/links"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {

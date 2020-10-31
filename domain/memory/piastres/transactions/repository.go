@@ -1,7 +1,6 @@
 package transactions
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/piastres/cancels"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
 	"github.com/xmn-services/rod-network/libs/hash"
@@ -9,27 +8,18 @@ import (
 
 type repository struct {
 	builder           Builder
-	contentBuilder    ContentBuilder
-	elementBuilder    ElementBuilder
 	expenseRepository expenses.Repository
-	cancelRepository  cancels.Repository
 	trRepository      transfer_transaction.Repository
 }
 
 func createRepository(
 	builder Builder,
-	contentBuilder ContentBuilder,
-	elementBuilder ElementBuilder,
 	expenseRepository expenses.Repository,
-	cancelRepository cancels.Repository,
 	trRepository transfer_transaction.Repository,
 ) Repository {
 	out := repository{
 		builder:           builder,
-		contentBuilder:    contentBuilder,
-		elementBuilder:    elementBuilder,
 		expenseRepository: expenseRepository,
-		cancelRepository:  cancelRepository,
 		trRepository:      trRepository,
 	}
 
@@ -43,8 +33,8 @@ func (app *repository) Retrieve(hsh hash.Hash) (Transaction, error) {
 		return nil, err
 	}
 
-	triggersOn := trTrx.TriggersOn()
-	builder := app.contentBuilder.Create().TriggersOn(triggersOn)
+	createdOn := trTrx.CreatedOn()
+	builder := app.builder.Create().CreatedOn(createdOn)
 	if trTrx.HasFees() {
 		feesHashes := trTrx.Fees()
 		fees, err := app.expenseRepository.RetrieveAll(feesHashes)
@@ -55,30 +45,12 @@ func (app *repository) Retrieve(hsh hash.Hash) (Transaction, error) {
 		builder.WithFees(fees)
 	}
 
-	elementBuilder := app.elementBuilder.Create()
-	if trTrx.IsBucket() {
+	if trTrx.HasBucket() {
 		bucketHash := trTrx.Bucket()
-		elementBuilder.WithBucket(*bucketHash)
+		builder.WithBucket(*bucketHash)
 	}
 
-	if trTrx.IsCancel() {
-		cancelHash := trTrx.Cancel()
-		cancel, err := app.cancelRepository.Retrieve(*cancelHash)
-		if err != nil {
-			return nil, err
-		}
-
-		elementBuilder.WithCancel(cancel)
-	}
-
-	content, err := builder.Now()
-	if err != nil {
-		return nil, err
-	}
-
-	signature := trTrx.Signature()
-	createdOn := trTrx.CreatedOn()
-	return app.builder.Create().WithContent(content).WithSignature(signature).CreatedOn(createdOn).Now()
+	return builder.Now()
 }
 
 // RetrieveAll retrieves all trx from hashes

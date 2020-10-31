@@ -1,7 +1,6 @@
 package transactions
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/piastres/cancels"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
 )
@@ -10,7 +9,6 @@ type service struct {
 	adapter        Adapter
 	repository     Repository
 	expenseService expenses.Service
-	cancelService  cancels.Service
 	trService      transfer_transaction.Service
 }
 
@@ -18,14 +16,12 @@ func createService(
 	adapter Adapter,
 	repository Repository,
 	expenseService expenses.Service,
-	cancelService cancels.Service,
 	trService transfer_transaction.Service,
 ) Service {
 	out := service{
 		adapter:        adapter,
 		repository:     repository,
 		expenseService: expenseService,
-		cancelService:  cancelService,
 		trService:      trService,
 	}
 
@@ -40,23 +36,11 @@ func (app *service) Save(trx Transaction) error {
 		return nil
 	}
 
-	content := trx.Content()
-	if content.HasFees() {
-		fees := content.Fees()
+	if trx.HasFees() {
+		fees := trx.Fees()
 		err = app.expenseService.SaveAll(fees)
 		if err != nil {
 			return err
-		}
-	}
-
-	if content.HasElement() {
-		element := content.Element()
-		if element.IsCancel() {
-			cancel := element.Cancel()
-			err = app.cancelService.Save(cancel)
-			if err != nil {
-				return err
-			}
 		}
 	}
 

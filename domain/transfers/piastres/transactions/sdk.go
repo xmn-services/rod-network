@@ -3,7 +3,6 @@ package transactions
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/libs/hash"
@@ -42,11 +41,8 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	TriggersOn(triggersOn time.Time) Builder
 	WithFees(fees []hash.Hash) Builder
 	WithBucket(bucket hash.Hash) Builder
-	WithCancel(cancel hash.Hash) Builder
-	WithSignature(signature signature.RingSignature) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Transaction, error)
 }
@@ -54,12 +50,8 @@ type Builder interface {
 // Transaction represents a transaction
 type Transaction interface {
 	entities.Immutable
-	Signature() signature.RingSignature
-	TriggersOn() time.Time
-	IsBucket() bool
+	HasBucket() bool
 	Bucket() *hash.Hash
-	IsCancel() bool
-	Cancel() *hash.Hash
 	HasFees() bool
 	Fees() []hash.Hash
 }

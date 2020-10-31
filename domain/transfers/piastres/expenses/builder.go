@@ -13,9 +13,8 @@ type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
 	amount           uint64
-	from             *hash.Hash
-	cancel           *hash.Hash
-	signatures       []signature.RingSignature
+	from             []hash.Hash
+	signatures       [][]signature.RingSignature
 	remaining        *hash.Hash
 	createdOn        *time.Time
 }
@@ -28,7 +27,6 @@ func createBuilder(
 		hash:             nil,
 		amount:           0,
 		from:             nil,
-		cancel:           nil,
 		signatures:       nil,
 		remaining:        nil,
 		createdOn:        nil,
@@ -55,19 +53,13 @@ func (app *builder) WithAmount(amount uint64) Builder {
 }
 
 // From adds a from hash to the builder
-func (app *builder) From(from hash.Hash) Builder {
-	app.from = &from
-	return app
-}
-
-// WithCancel adds a cancel hash to the builder
-func (app *builder) WithCancel(cancel hash.Hash) Builder {
-	app.cancel = &cancel
+func (app *builder) From(from []hash.Hash) Builder {
+	app.from = from
 	return app
 }
 
 // WithSignatures adds signatures hash to the builder
-func (app *builder) WithSignatures(signatures []signature.RingSignature) Builder {
+func (app *builder) WithSignatures(signatures [][]signature.RingSignature) Builder {
 	app.signatures = signatures
 	return app
 }
@@ -94,8 +86,8 @@ func (app *builder) Now() (Expense, error) {
 		return nil, errors.New("the from hash is mandatory in order to build an Expense instance")
 	}
 
-	if app.cancel == nil {
-		return nil, errors.New("the cancel hash is mandatory in order to build an Expense instance")
+	if len(app.from) <= 0 {
+		return nil, errors.New("there must be at least 1 from hash in order to build an Expense instance")
 	}
 
 	if app.signatures == nil {
@@ -112,8 +104,8 @@ func (app *builder) Now() (Expense, error) {
 	}
 
 	if app.remaining != nil {
-		return createExpenseWithRemaining(immutable, app.amount, *app.from, *app.cancel, app.signatures, app.remaining), nil
+		return createExpenseWithRemaining(immutable, app.amount, app.from, app.signatures, app.remaining), nil
 	}
 
-	return createExpense(immutable, app.amount, *app.from, *app.cancel, app.signatures), nil
+	return createExpense(immutable, app.amount, app.from, app.signatures), nil
 }

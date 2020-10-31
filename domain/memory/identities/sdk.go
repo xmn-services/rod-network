@@ -5,6 +5,7 @@ import (
 
 	"github.com/xmn-services/rod-network/domain/memory/buckets"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	"github.com/xmn-services/rod-network/libs/entities"
 )
 
@@ -14,7 +15,7 @@ type Builder interface {
 	WithSeed(seed string) Builder
 	WithName(name string) Builder
 	WithRoot(root string) Builder
-	WithWallets(wallets []wallets.Wallet) Builder
+	WithWallets(wallets []wallet.Wallet) Builder
 	WithBuckets(buckets []buckets.Bucket) Builder
 	CreatedOn(createdOn time.Time) Builder
 	LastUpdatedOn(lastUpdatedOn time.Time) Builder
@@ -27,8 +28,7 @@ type Identity interface {
 	Seed() string
 	Name() string
 	Root() string
-	HasWallets() bool
-	Wallets() []wallets.Wallet
+	Wallets() wallets.Wallets
 	HasBuckets() bool
 	Buckets() []buckets.Bucket
 }

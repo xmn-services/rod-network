@@ -13,27 +13,26 @@ import (
 type content struct {
 	immutable entities.Immutable
 	amount    uint64
-	from      bills.Bill
-	cancel    locks.Lock
+	from      []bills.Bill
 	remaining locks.Lock
 }
 
 func createContentFromJSON(ins *JSONContent) (Content, error) {
 	billsAdapter := bills.NewAdapter()
-	from, err := billsAdapter.ToBill(ins.From)
-	if err != nil {
-		return nil, err
+
+	from := []bills.Bill{}
+	for _, oneFrom := range ins.From {
+		single, err := billsAdapter.ToBill(oneFrom)
+		if err != nil {
+			return nil, err
+		}
+
+		from = append(from, single)
 	}
 
 	locksAdapter := locks.NewAdapter()
-	cancel, err := locksAdapter.ToLock(ins.Cancel)
-	if err != nil {
-		return nil, err
-	}
-
 	builder := NewContentBuilder().Create().
 		From(from).
-		WithCancel(cancel).
 		WithAmount(ins.Amount).
 		CreatedOn(ins.CreatedOn)
 
@@ -52,34 +51,30 @@ func createContentFromJSON(ins *JSONContent) (Content, error) {
 func createContent(
 	immutable entities.Immutable,
 	amount uint64,
-	from bills.Bill,
-	cancel locks.Lock,
+	from []bills.Bill,
 ) Content {
-	return createContentInternally(immutable, amount, from, cancel, nil)
+	return createContentInternally(immutable, amount, from, nil)
 }
 
 func createContentWithRemaining(
 	immutable entities.Immutable,
 	amount uint64,
-	from bills.Bill,
-	cancel locks.Lock,
+	from []bills.Bill,
 	remaining locks.Lock,
 ) Content {
-	return createContentInternally(immutable, amount, from, cancel, remaining)
+	return createContentInternally(immutable, amount, from, remaining)
 }
 
 func createContentInternally(
 	immutable entities.Immutable,
 	amount uint64,
-	from bills.Bill,
-	cancel locks.Lock,
+	from []bills.Bill,
 	remaining locks.Lock,
 ) Content {
 	out := content{
 		immutable: immutable,
 		amount:    amount,
 		from:      from,
-		cancel:    cancel,
 		remaining: remaining,
 	}
 
@@ -97,13 +92,8 @@ func (obj *content) Amount() uint64 {
 }
 
 // From returns the from bill
-func (obj *content) From() bills.Bill {
+func (obj *content) From() []bills.Bill {
 	return obj.from
-}
-
-// Cancel returns the cancel lock
-func (obj *content) Cancel() locks.Lock {
-	return obj.cancel
 }
 
 // HasRemaining returns ture if there is a remaining lock, false otherwise
@@ -144,7 +134,6 @@ func (obj *content) UnmarshalJSON(data []byte) error {
 	obj.immutable = insExpense.immutable
 	obj.amount = insExpense.amount
 	obj.from = insExpense.from
-	obj.cancel = insExpense.cancel
 	obj.remaining = insExpense.remaining
 	return nil
 }

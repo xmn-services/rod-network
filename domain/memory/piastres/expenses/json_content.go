@@ -9,19 +9,22 @@ import (
 
 // JSONContent represents a json content
 type JSONContent struct {
-	Amount    uint64          `json:"amount"`
-	From      *bills.JSONBill `json:"from"`
-	Cancel    *locks.JSONLock `json:"cancel"`
-	Remaining *locks.JSONLock `json:"remaining"`
-	CreatedOn time.Time       `json:"created_on"`
+	Amount    uint64            `json:"amount"`
+	From      []*bills.JSONBill `json:"from"`
+	Remaining *locks.JSONLock   `json:"remaining"`
+	CreatedOn time.Time         `json:"created_on"`
 }
 
 func createJSONContentFromContent(content Content) *JSONContent {
+	from := content.From()
+	fromJS := []*bills.JSONBill{}
 	billsAdapter := bills.NewAdapter()
-	from := billsAdapter.ToJSON(content.From())
+	for _, oneBill := range from {
+		single := billsAdapter.ToJSON(oneBill)
+		fromJS = append(fromJS, single)
+	}
 
 	locksAdapter := locks.NewAdapter()
-	cancel := locksAdapter.ToJSON(content.Cancel())
 	var remaining *locks.JSONLock
 	if content.HasRemaining() {
 		remaining = locksAdapter.ToJSON(content.Remaining())
@@ -29,20 +32,18 @@ func createJSONContentFromContent(content Content) *JSONContent {
 
 	amount := content.Amount()
 	createdOn := content.CreatedOn()
-	return createJSONContent(amount, from, cancel, remaining, createdOn)
+	return createJSONContent(amount, fromJS, remaining, createdOn)
 }
 
 func createJSONContent(
 	amount uint64,
-	from *bills.JSONBill,
-	cancel *locks.JSONLock,
+	from []*bills.JSONBill,
 	remaining *locks.JSONLock,
 	createdOn time.Time,
 ) *JSONContent {
 	out := JSONContent{
 		Amount:    amount,
 		From:      from,
-		Cancel:    cancel,
 		Remaining: remaining,
 		CreatedOn: createdOn,
 	}

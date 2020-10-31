@@ -12,9 +12,8 @@ import (
 type expense struct {
 	immutable  entities.Immutable
 	amount     uint64
-	from       hash.Hash
-	cancel     hash.Hash
-	signatures []signature.RingSignature
+	from       []hash.Hash
+	signatures [][]signature.RingSignature
 	remaining  *hash.Hash
 }
 
@@ -25,32 +24,36 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 		return nil, err
 	}
 
-	from, err := hashAdapter.FromString(ins.From)
-	if err != nil {
-		return nil, err
-	}
-
-	cancel, err := hashAdapter.FromString(ins.Cancel)
-	if err != nil {
-		return nil, err
-	}
-
-	ringSigAdapter := signature.NewRingSignatureAdapter()
-	signatures := []signature.RingSignature{}
-	for _, oneSigStr := range ins.Signatures {
-		sig, err := ringSigAdapter.ToSignature(oneSigStr)
+	from := []hash.Hash{}
+	for _, oneStr := range ins.From {
+		oneFrom, err := hashAdapter.FromString(oneStr)
 		if err != nil {
 			return nil, err
 		}
 
-		signatures = append(signatures, sig)
+		from = append(from, *oneFrom)
+	}
+
+	ringSigAdapter := signature.NewRingSignatureAdapter()
+	signatures := [][]signature.RingSignature{}
+	for _, oneSigList := range ins.Signatures {
+		signaturesList := []signature.RingSignature{}
+		for _, oneSigStr := range oneSigList {
+			sig, err := ringSigAdapter.ToSignature(oneSigStr)
+			if err != nil {
+				return nil, err
+			}
+
+			signaturesList = append(signaturesList, sig)
+		}
+
+		signatures = append(signatures, signaturesList)
 	}
 
 	builder := NewBuilder().Create().
 		WithHash(*hsh).
 		WithAmount(ins.Amount).
-		From(*from).
-		WithCancel(*cancel).
+		From(from).
 		WithSignatures(signatures).
 		CreatedOn(ins.CreatedOn)
 
@@ -69,37 +72,33 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 func createExpense(
 	immutable entities.Immutable,
 	amount uint64,
-	from hash.Hash,
-	cancel hash.Hash,
-	signatures []signature.RingSignature,
+	from []hash.Hash,
+	signatures [][]signature.RingSignature,
 ) Expense {
-	return createExpenseInternally(immutable, amount, from, cancel, signatures, nil)
+	return createExpenseInternally(immutable, amount, from, signatures, nil)
 }
 
 func createExpenseWithRemaining(
 	immutable entities.Immutable,
 	amount uint64,
-	from hash.Hash,
-	cancel hash.Hash,
-	signatures []signature.RingSignature,
+	from []hash.Hash,
+	signatures [][]signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
-	return createExpenseInternally(immutable, amount, from, cancel, signatures, remaining)
+	return createExpenseInternally(immutable, amount, from, signatures, remaining)
 }
 
 func createExpenseInternally(
 	immutable entities.Immutable,
 	amount uint64,
-	from hash.Hash,
-	cancel hash.Hash,
-	signatures []signature.RingSignature,
+	from []hash.Hash,
+	signatures [][]signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
 	out := expense{
 		immutable:  immutable,
 		amount:     amount,
 		from:       from,
-		cancel:     cancel,
 		signatures: signatures,
 		remaining:  remaining,
 	}
@@ -118,7 +117,7 @@ func (obj *expense) Amount() uint64 {
 }
 
 // From returns the from hash
-func (obj *expense) From() hash.Hash {
+func (obj *expense) From() []hash.Hash {
 	return obj.from
 }
 
@@ -127,13 +126,8 @@ func (obj *expense) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
 }
 
-// Cancel returns the cancel hash
-func (obj *expense) Cancel() hash.Hash {
-	return obj.cancel
-}
-
 // Signatures returns the signatures
-func (obj *expense) Signatures() []signature.RingSignature {
+func (obj *expense) Signatures() [][]signature.RingSignature {
 	return obj.signatures
 }
 
@@ -170,7 +164,6 @@ func (obj *expense) UnmarshalJSON(data []byte) error {
 	obj.immutable = insExpense.immutable
 	obj.amount = insExpense.amount
 	obj.from = insExpense.from
-	obj.cancel = insExpense.cancel
 	obj.signatures = insExpense.signatures
 	obj.remaining = insExpense.remaining
 	return nil

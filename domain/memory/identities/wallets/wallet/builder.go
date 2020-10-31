@@ -1,11 +1,11 @@
-package wallets
+package wallet
 
 import (
 	"errors"
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/bills"
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/statements"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/statements"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )

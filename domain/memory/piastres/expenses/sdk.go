@@ -64,7 +64,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithContent(content Content) Builder
-	WithSignatures(sigs []signature.RingSignature) Builder
+	WithSignatures(sigs [][]signature.RingSignature) Builder
 	Now() (Expense, error)
 }
 
@@ -72,15 +72,14 @@ type Builder interface {
 type Expense interface {
 	entities.Immutable
 	Content() Content
-	Signatures() []signature.RingSignature
+	Signatures() [][]signature.RingSignature
 }
 
 // ContentBuilder represents a content builder
 type ContentBuilder interface {
 	Create() ContentBuilder
 	WithAmount(amount uint64) ContentBuilder
-	From(from bills.Bill) ContentBuilder
-	WithCancel(cancel locks.Lock) ContentBuilder
+	From(from []bills.Bill) ContentBuilder
 	WithRemaining(remaining locks.Lock) ContentBuilder
 	CreatedOn(createdOn time.Time) ContentBuilder
 	Now() (Content, error)
@@ -90,8 +89,7 @@ type ContentBuilder interface {
 type Content interface {
 	entities.Immutable
 	Amount() uint64
-	From() bills.Bill
-	Cancel() locks.Lock
+	From() []bills.Bill
 	HasRemaining() bool
 	Remaining() locks.Lock
 }

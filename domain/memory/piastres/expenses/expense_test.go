@@ -35,11 +35,10 @@ func TestExpense_Success(t *testing.T) {
 	billAmount := uint64(56)
 	bill := bills.CreateBillForTests(lock, billAmount)
 
-	cancelTreeshold := uint(22)
-	cancelLock := locks.CreateLockForTests(shareholders, cancelTreeshold)
-
 	amount := billAmount - 1
-	content := CreateContentForTests(amount, bill, cancelLock)
+	content := CreateContentForTests(amount, []bills.Bill{
+		bill,
+	})
 
 	ring := []signature.PublicKey{
 		firstPK.PublicKey(),
@@ -47,12 +46,14 @@ func TestExpense_Success(t *testing.T) {
 		thirdPK.PublicKey(),
 	}
 
-	msg := content.From().Lock().Hash().String()
+	msg := bill.Lock().Hash().String()
 	firstSig, _ := firstPK.RingSign(msg, ring)
 	secondSig, _ := secondPK.RingSign(msg, ring)
-	signatures := []signature.RingSignature{
-		firstSig,
-		secondSig,
+	signatures := [][]signature.RingSignature{
+		[]signature.RingSignature{
+			firstSig,
+			secondSig,
+		},
 	}
 
 	expenseIns := CreateExpenseForTests(content, signatures)

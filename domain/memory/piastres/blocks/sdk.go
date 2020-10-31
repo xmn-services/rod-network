@@ -3,12 +3,12 @@ package blocks
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/libs/hashtree"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	transfer_block "github.com/xmn-services/rod-network/domain/transfers/piastres/blocks"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 // NewService creates a new service instance

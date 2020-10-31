@@ -2,6 +2,7 @@ package expenses
 
 import (
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type adapter struct {
@@ -24,14 +25,18 @@ func (app *adapter) ToTransfer(expense Expense) (transfer_expense.Expense, error
 	sigs := expense.Signatures()
 	content := expense.Content()
 	amount := content.Amount()
-	from := content.From().Hash()
-	cancel := content.Cancel().Hash()
 	createdOn := content.CreatedOn()
+
+	fromHashes := []hash.Hash{}
+	from := content.From()
+	for _, oneFrom := range from {
+		fromHashes = append(fromHashes, oneFrom.Hash())
+	}
+
 	builder := app.trBuilder.Create().
 		WithHash(hsh).
 		WithAmount(amount).
-		From(from).
-		WithCancel(cancel).
+		From(fromHashes).
 		WithSignatures(sigs).
 		CreatedOn(createdOn)
 

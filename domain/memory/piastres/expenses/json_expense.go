@@ -3,15 +3,20 @@ package expenses
 // JSONExpense represents a jsonExpense instance
 type JSONExpense struct {
 	Content    *JSONContent `json:"content"`
-	Signatures []string     `json:"signatures"`
+	Signatures [][]string   `json:"signatures"`
 }
 
 func createJSONExpenseFromExpense(expense Expense) *JSONExpense {
 	content := createJSONContentFromContent(expense.Content())
-	signatures := []string{}
+	signatures := [][]string{}
 	sigs := expense.Signatures()
-	for _, oneSig := range sigs {
-		signatures = append(signatures, oneSig.String())
+	for _, oneSigs := range sigs {
+		signatureList := []string{}
+		for _, oneSig := range oneSigs {
+			signatureList = append(signatureList, oneSig.String())
+		}
+
+		signatures = append(signatures, signatureList)
 	}
 
 	return createJSONExpense(content, signatures)
@@ -19,7 +24,7 @@ func createJSONExpenseFromExpense(expense Expense) *JSONExpense {
 
 func createJSONExpense(
 	content *JSONContent,
-	signatures []string,
+	signatures [][]string,
 ) *JSONExpense {
 	out := JSONExpense{
 		Content:    content,

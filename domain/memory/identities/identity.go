@@ -14,7 +14,7 @@ type identity struct {
 	seed    string
 	name    string
 	root    string
-	wallets []wallets.Wallet
+	wallets wallets.Wallets
 	buckets []buckets.Bucket
 }
 
@@ -23,16 +23,7 @@ func createIdentity(
 	seed string,
 	name string,
 	root string,
-) Identity {
-	return createIdentityInternally(mutable, seed, name, root, nil, nil)
-}
-
-func createIdentityWithWallets(
-	mutable entities.Mutable,
-	seed string,
-	name string,
-	root string,
-	wallets []wallets.Wallet,
+	wallets wallets.Wallets,
 ) Identity {
 	return createIdentityInternally(mutable, seed, name, root, wallets, nil)
 }
@@ -42,17 +33,7 @@ func createIdentityWithBuckets(
 	seed string,
 	name string,
 	root string,
-	buckets []buckets.Bucket,
-) Identity {
-	return createIdentityInternally(mutable, seed, name, root, nil, buckets)
-}
-
-func createIdentityWithWalletsAndBuckets(
-	mutable entities.Mutable,
-	seed string,
-	name string,
-	root string,
-	wallets []wallets.Wallet,
+	wallets wallets.Wallets,
 	buckets []buckets.Bucket,
 ) Identity {
 	return createIdentityInternally(mutable, seed, name, root, wallets, buckets)
@@ -63,7 +44,7 @@ func createIdentityInternally(
 	seed string,
 	name string,
 	root string,
-	wallets []wallets.Wallet,
+	wallets wallets.Wallets,
 	buckets []buckets.Bucket,
 ) Identity {
 	out := identity{
@@ -108,13 +89,8 @@ func (obj *identity) CreatedOn() time.Time {
 	return obj.mutable.CreatedOn()
 }
 
-// HasWallets returns true if there is wallets, false otherwise
-func (obj *identity) HasWallets() bool {
-	return obj.wallets != nil
-}
-
-// Wallets returns the wallets, if any
-func (obj *identity) Wallets() []wallets.Wallet {
+// Wallets returns the wallets
+func (obj *identity) Wallets() wallets.Wallets {
 	return obj.wallets
 }
 

@@ -1,9 +1,9 @@
 package mined
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/blocks"
 	transfer_block_mined "github.com/xmn-services/rod-network/domain/transfers/piastres/blocks/mined"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {

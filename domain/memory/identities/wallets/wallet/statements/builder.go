@@ -3,7 +3,7 @@ package statements
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/statements/entries"
+	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/statements/entries"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )

@@ -42,13 +42,7 @@ func (app *service) Save(expense Expense) error {
 
 	content := expense.Content()
 	bill := content.From()
-	err = app.billService.Save(bill)
-	if err != nil {
-		return err
-	}
-
-	lock := content.Cancel()
-	err = app.lockService.Save(lock)
+	err = app.billService.SaveAll(bill)
 	if err != nil {
 		return err
 	}
