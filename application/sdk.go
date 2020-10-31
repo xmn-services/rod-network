@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/xmn-services/rod-network/application/genesis"
 	application_identities "github.com/xmn-services/rod-network/application/identities"
+	"github.com/xmn-services/rod-network/application/miners"
 	application_peers "github.com/xmn-services/rod-network/application/peers"
 )
 
@@ -22,4 +23,5 @@ type Current interface {
 type SubApplications interface {
 	Peers() application_peers.Application
 	Genesis() genesis.Application
+	Miner() miners.Application
 }
