@@ -149,13 +149,8 @@ func (app *current) Init(
 	wallets := identity.Wallets().All()
 	wallets = append(wallets, wallet)
 
-	identityBuilder := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root).WithWallets(wallets).CreatedOn(identityCreatedOn).LastUpdatedOn(lastUpdatedOn)
-	if identity.HasBuckets() {
-		buckets := identity.Buckets()
-		identityBuilder.WithBuckets(buckets)
-	}
-
-	updatedIdentity, err := identityBuilder.Now()
+	buckets := identity.Buckets().All()
+	updatedIdentity, err := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root).WithWallets(wallets).WithBuckets(buckets).CreatedOn(identityCreatedOn).LastUpdatedOn(lastUpdatedOn).Now()
 	if err != nil {
 		return err
 	}

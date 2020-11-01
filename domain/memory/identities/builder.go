@@ -4,7 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/buckets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/buckets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/buckets/bucket"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -15,11 +16,12 @@ type builder struct {
 	hashAdapter    hash.Adapter
 	mutableBuilder entities.MutableBuilder
 	walletsBuilder wallets.Builder
+	bucketsBuilder buckets.Builder
 	seed           string
 	name           string
 	root           string
 	wallets        []wallet.Wallet
-	buckets        []buckets.Bucket
+	buckets        []bucket.Bucket
 	createdOn      *time.Time
 	lastUpdatedOn  *time.Time
 }
@@ -28,11 +30,13 @@ func createBuilder(
 	hashAdapter hash.Adapter,
 	mutableBuilder entities.MutableBuilder,
 	walletsBuilder wallets.Builder,
+	bucketsBuilder buckets.Builder,
 ) Builder {
 	out := builder{
 		hashAdapter:    hashAdapter,
 		mutableBuilder: mutableBuilder,
 		walletsBuilder: walletsBuilder,
+		bucketsBuilder: bucketsBuilder,
 		seed:           "",
 		name:           "",
 		root:           "",
@@ -47,7 +51,12 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.mutableBuilder, app.walletsBuilder)
+	return createBuilder(
+		app.hashAdapter,
+		app.mutableBuilder,
+		app.walletsBuilder,
+		app.bucketsBuilder,
+	)
 }
 
 // WithSeed adds a seed to the builder
@@ -75,7 +84,7 @@ func (app *builder) WithWallets(wallets []wallet.Wallet) Builder {
 }
 
 // WithBuckets add buckets to the builder
-func (app *builder) WithBuckets(buckets []buckets.Bucket) Builder {
+func (app *builder) WithBuckets(buckets []bucket.Bucket) Builder {
 	app.buckets = buckets
 	return app
 }
@@ -144,9 +153,15 @@ func (app *builder) Now() (Identity, error) {
 		return nil, err
 	}
 
-	if app.buckets != nil {
-		return createIdentityWithBuckets(mutable, app.seed, app.name, app.root, wallets, app.buckets), nil
+	bucketsBuilder := app.bucketsBuilder.Create()
+	if app.buckets != nil && len(app.buckets) > 0 {
+		bucketsBuilder.WithBuckets(app.buckets)
 	}
 
-	return createIdentity(mutable, app.seed, app.name, app.root, wallets), nil
+	buckets, err := bucketsBuilder.Now()
+	if err != nil {
+		return nil, err
+	}
+
+	return createIdentity(mutable, app.seed, app.name, app.root, wallets, buckets), nil
 }

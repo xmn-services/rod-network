@@ -1,43 +1,43 @@
 package buckets
 
 import (
-	"github.com/xmn-services/rod-network/domain/memory/buckets/informations"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
 	transfer_bucket "github.com/xmn-services/rod-network/domain/transfers/buckets"
 )
 
 type service struct {
-	adapter            Adapter
-	repository         Repository
-	informationService informations.Service
-	trService          transfer_bucket.Service
+	adapter     Adapter
+	repository  Repository
+	fileService files.Service
+	trService   transfer_bucket.Service
 }
 
 func createService(
 	adapter Adapter,
 	repository Repository,
-	informationService informations.Service,
+	fileService files.Service,
 	trService transfer_bucket.Service,
 ) Service {
 	out := service{
-		adapter:            adapter,
-		repository:         repository,
-		informationService: informationService,
-		trService:          trService,
+		adapter:     adapter,
+		repository:  repository,
+		fileService: fileService,
+		trService:   trService,
 	}
 
 	return &out
 }
 
-// Save saves a bucket instance
+// Save saves an bucket instance
 func (app *service) Save(bucket Bucket) error {
-	path := bucket.AbsolutePath()
-	_, err := app.repository.Retrieve(path)
+	hash := bucket.Hash()
+	_, err := app.repository.Retrieve(hash)
 	if err == nil {
 		return nil
 	}
 
-	information := bucket.Information()
-	err = app.informationService.Save(information)
+	files := bucket.Files()
+	err = app.fileService.SaveAll(files)
 	if err != nil {
 		return err
 	}
@@ -48,13 +48,12 @@ func (app *service) Save(bucket Bucket) error {
 	}
 
 	return app.trService.Save(trBucket)
-
 }
 
-// Delete deletes a bucket instance
+// Delete deletes an bucket instance
 func (app *service) Delete(bucket Bucket) error {
-	information := bucket.Information()
-	err := app.informationService.Delete(information)
+	files := bucket.Files()
+	err := app.fileService.DeleteAll(files)
 	if err != nil {
 		return err
 	}

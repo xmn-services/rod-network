@@ -3,7 +3,8 @@ package identities
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/buckets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/buckets"
+	"github.com/xmn-services/rod-network/domain/memory/identities/buckets/bucket"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -16,7 +17,7 @@ type Builder interface {
 	WithName(name string) Builder
 	WithRoot(root string) Builder
 	WithWallets(wallets []wallet.Wallet) Builder
-	WithBuckets(buckets []buckets.Bucket) Builder
+	WithBuckets(buckets []bucket.Bucket) Builder
 	CreatedOn(createdOn time.Time) Builder
 	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Identity, error)
@@ -29,8 +30,7 @@ type Identity interface {
 	Name() string
 	Root() string
 	Wallets() wallets.Wallets
-	HasBuckets() bool
-	Buckets() []buckets.Bucket
+	Buckets() buckets.Buckets
 }
 
 // Repository represents an identity repository

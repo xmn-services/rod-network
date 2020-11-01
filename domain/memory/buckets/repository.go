@@ -1,82 +1,50 @@
 package buckets
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/buckets/informations"
+	"github.com/xmn-services/rod-network/domain/memory/buckets/files"
 	transfer_bucket "github.com/xmn-services/rod-network/domain/transfers/buckets"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {
-	hashAdapter           hash.Adapter
-	informationRepository informations.Repository
-	trRepository          transfer_bucket.Repository
-	builder               Builder
+	fileRepository files.Repository
+	trRepository   transfer_bucket.Repository
+	builder        Builder
 }
 
 func createRepository(
-	hashAdapter hash.Adapter,
-	informationRepository informations.Repository,
+	fileRepository files.Repository,
 	trRepository transfer_bucket.Repository,
 	builder Builder,
 ) Repository {
 	out := repository{
-		hashAdapter:           hashAdapter,
-		informationRepository: informationRepository,
-		trRepository:          trRepository,
-		builder:               builder,
+		fileRepository: fileRepository,
+		trRepository:   trRepository,
+		builder:        builder,
 	}
 
 	return &out
 }
 
-// RetrieveAll retrieves all buckets
-func (app *repository) RetrieveAll() ([]Bucket, error) {
-	trBuckets, err := app.trRepository.RetrieveAll()
+// Retrieve retrieves an bucket instance by hash
+func (app *repository) Retrieve(hsh hash.Hash) (Bucket, error) {
+	trBucket, err := app.trRepository.Retrieve(hsh)
 	if err != nil {
 		return nil, err
 	}
 
-	out := []Bucket{}
-	for _, oneTrBucket := range trBuckets {
-		bucket, err := app.build(oneTrBucket)
-		if err != nil {
-			return nil, err
-		}
-
-		out = append(out, bucket)
+	amount := trBucket.Amount()
+	fileHashes := []hash.Hash{}
+	leaves := trBucket.Files().Parent().BlockLeaves().Leaves()
+	for i := 0; i < int(amount); i++ {
+		fileHashes = append(fileHashes, leaves[i].Head())
 	}
 
-	return out, nil
-}
-
-// Retrieve retrieves a bucket by AbsolutePath
-func (app *repository) Retrieve(absolutePath string) (Bucket, error) {
-	hsh, err := app.hashAdapter.FromBytes([]byte(absolutePath))
+	files, err := app.fileRepository.RetrieveAll(fileHashes)
 	if err != nil {
 		return nil, err
 	}
 
-	trBucket, err := app.trRepository.Retrieve(*hsh)
-	if err != nil {
-		return nil, err
-	}
-
-	return app.build(trBucket)
-}
-
-func (app *repository) build(trBucket transfer_bucket.Bucket) (Bucket, error) {
-	informationHash := trBucket.Information()
-	information, err := app.informationRepository.Retrieve(informationHash)
-	if err != nil {
-		return nil, err
-	}
-
-	path := trBucket.AbsolutePath()
-	pk := trBucket.PrivateKey()
 	createdOn := trBucket.CreatedOn()
-	return app.builder.Create().
-		WithAbsolutePath(path).
-		WithInformation(information).
-		WithPrivateKey(pk).
-		CreatedOn(createdOn).Now()
+	return app.builder.Create().WithFiles(files).CreatedOn(createdOn).Now()
 }

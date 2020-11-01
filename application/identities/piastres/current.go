@@ -36,7 +36,7 @@ func createCurrent(
 
 // Bucket executes a bucket transaction
 func (app *current) Bucket(absolutePath string, fees []Fee) error {
-	bucket, err := app.bucketRepository.Retrieve(absolutePath)
+	bucket, err := app.identity.Buckets().Fetch(absolutePath)
 	if err != nil {
 		return err
 	}

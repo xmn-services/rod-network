@@ -9,5 +9,4 @@ type Application interface {
 type Current interface {
 	Add(absolutePath string) error
 	Delete(absolutePath string) error
-	Purge(absolutePath string) error
 }

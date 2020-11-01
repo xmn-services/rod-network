@@ -2,19 +2,19 @@ package buckets
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	information      *hash.Hash
-	absolutePath     string
-	pk               encryption.PrivateKey
+	files            hashtree.HashTree
+	amount           uint
 	createdOn        *time.Time
 }
 
@@ -24,9 +24,8 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		pk:               nil,
-		information:      nil,
-		absolutePath:     "",
+		files:            nil,
+		amount:           0,
 		createdOn:        nil,
 	}
 
@@ -44,21 +43,15 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 	return app
 }
 
-// WithInformation adds an information to the builder
-func (app *builder) WithInformation(information hash.Hash) Builder {
-	app.information = &information
+// WithFiles add files to the builder
+func (app *builder) WithFiles(files hashtree.HashTree) Builder {
+	app.files = files
 	return app
 }
 
-// WithAbsolutePath adds an absolutePath to the builder
-func (app *builder) WithAbsolutePath(absolutePath string) Builder {
-	app.absolutePath = absolutePath
-	return app
-}
-
-// WithPrivateKey adds a privateKey to the builder
-func (app *builder) WithPrivateKey(pk encryption.PrivateKey) Builder {
-	app.pk = pk
+// WithAmount adds an amount to the builder
+func (app *builder) WithAmount(amount uint) Builder {
+	app.amount = amount
 	return app
 }
 
@@ -71,19 +64,21 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 // Now builds a new Bucket instance
 func (app *builder) Now() (Bucket, error) {
 	if app.hash == nil {
-		return nil, errors.New("the hash is mandatory in order to build a Bucket intance")
+		return nil, errors.New("the hash is mandatory in order to build an Bucket instance")
 	}
 
-	if app.pk == nil {
-		return nil, errors.New("the PrivateKey is mandatory in order to build a Bucket instance")
+	if app.files == nil {
+		return nil, errors.New("the files hashtree is mandatory in order to build an Bucket instance")
 	}
 
-	if app.information == nil {
-		return nil, errors.New("the information hash is mandatory in order to build a Bucket instance")
+	if app.amount <= 0 {
+		return nil, errors.New("the amount must be greater than zero (0) in order to build an Bucket instance")
 	}
 
-	if app.absolutePath == "" {
-		return nil, errors.New("the absolutePath is mandatory in order to build a Bucket instance")
+	length := app.files.Length()
+	if length < int(app.amount) {
+		str := fmt.Sprintf("the chunk's length (%d) cannot be smaller than the amount (%d)", length, app.amount)
+		return nil, errors.New(str)
 	}
 
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
@@ -91,5 +86,5 @@ func (app *builder) Now() (Bucket, error) {
 		return nil, err
 	}
 
-	return createBucket(immutable, *app.information, app.absolutePath, app.pk), nil
+	return createBucket(immutable, app.files, app.amount), nil
 }

@@ -3,10 +3,10 @@ package buckets
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/entities"
 	libs_file "github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 // NewService creates a new service instance
@@ -38,32 +38,29 @@ type Adapter interface {
 	ToJSON(bucket Bucket) ([]byte, error)
 }
 
-// Builder represents a bucket builder
+// Builder represents the bucket builder
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	WithInformation(information hash.Hash) Builder
-	WithAbsolutePath(absolutePath string) Builder
-	WithPrivateKey(pk encryption.PrivateKey) Builder
+	WithFiles(files hashtree.HashTree) Builder
+	WithAmount(amount uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Bucket, error)
 }
 
-// Bucket represents a bucket
+// Bucket represents the bucket bucket
 type Bucket interface {
 	entities.Immutable
-	Information() hash.Hash
-	AbsolutePath() string
-	PrivateKey() encryption.PrivateKey
+	Files() hashtree.HashTree
+	Amount() uint
 }
 
-// Repository represents a bucket repository
+// Repository represents a bucket bucket repository
 type Repository interface {
-	RetrieveAll() ([]Bucket, error)
 	Retrieve(hash hash.Hash) (Bucket, error)
 }
 
-// Service represents a bucket service
+// Service represents a bucket bucket service
 type Service interface {
 	Save(bucket Bucket) error
 	Delete(bucket Bucket) error

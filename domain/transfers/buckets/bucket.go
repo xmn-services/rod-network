@@ -3,29 +3,34 @@ package buckets
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type bucket struct {
-	immutable    entities.Immutable
-	information  hash.Hash
-	absolutePath string
-	pk           encryption.PrivateKey
+	immutable entities.Immutable
+	files     hashtree.HashTree
+	amount    uint
 }
 
 func createBucket(
 	immutable entities.Immutable,
-	information hash.Hash,
-	absolutePath string,
-	pk encryption.PrivateKey,
+	files hashtree.HashTree,
+	amount uint,
+) Bucket {
+	return createBucketInternally(immutable, files, amount)
+}
+
+func createBucketInternally(
+	immutable entities.Immutable,
+	files hashtree.HashTree,
+	amount uint,
 ) Bucket {
 	out := bucket{
-		immutable:    immutable,
-		information:  information,
-		absolutePath: absolutePath,
-		pk:           pk,
+		immutable: immutable,
+		files:     files,
+		amount:    amount,
 	}
 
 	return &out
@@ -36,19 +41,14 @@ func (obj *bucket) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Information returns the information
-func (obj *bucket) Information() hash.Hash {
-	return obj.information
+// Files return the files
+func (obj *bucket) Files() hashtree.HashTree {
+	return obj.files
 }
 
-// AbsolutePath returns the absolute path
-func (obj *bucket) AbsolutePath() string {
-	return obj.absolutePath
-}
-
-// PrivateKey returns the privateKey
-func (obj *bucket) PrivateKey() encryption.PrivateKey {
-	return obj.pk
+// Amount returns the amount
+func (obj *bucket) Amount() uint {
+	return obj.amount
 }
 
 // CreatedOn returns the creation time
