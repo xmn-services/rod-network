@@ -11,7 +11,6 @@ type Current interface {
 		name string,
 		password string,
 		seed string,
-		power uint,
 		walletName string,
 		amountUnits uint64,
 		blockDifficultyBase uint,

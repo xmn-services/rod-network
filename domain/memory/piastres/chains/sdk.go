@@ -3,12 +3,12 @@ package chains
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	mined_block "github.com/xmn-services/rod-network/domain/memory/piastres/blocks/mined"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	mined_link "github.com/xmn-services/rod-network/domain/memory/piastres/links/mined"
 	transfer_chains "github.com/xmn-services/rod-network/domain/transfers/piastres/chains"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // NewService creates a new service instance

@@ -8,7 +8,6 @@ import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/hash"
@@ -26,15 +25,12 @@ func TestBlock_Success(t *testing.T) {
 		return
 	}
 
-	// shareholders:
-	power := uint(1)
-	holders := []shareholders.ShareHolder{
-		shareholders.CreateShareHolderForTests(power, *pubKeyHash),
+	pubKeys := []hash.Hash{
+		*pubKeyHash,
 	}
 
 	// transaction expense bill lock:
-	treeshold := uint(1)
-	lock := locks.CreateLockForTests(holders, treeshold)
+	lock := locks.CreateLockForTests(pubKeys)
 
 	// transaction expense bill:
 	trxExpenseBillAmount := uint64(11)
@@ -43,7 +39,7 @@ func TestBlock_Success(t *testing.T) {
 	// transaction expense:
 	trxExpenseContent := expenses.CreateContentForTests(trxExpenseBillAmount, []bills.Bill{
 		trxExpenseBill,
-	})
+	}, lock)
 
 	trxExpenseSig, err := pk.RingSign(trxExpenseBill.Lock().Hash().String(), []signature.PublicKey{
 		pubKey,
@@ -54,10 +50,8 @@ func TestBlock_Success(t *testing.T) {
 		return
 	}
 
-	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, [][]signature.RingSignature{
-		[]signature.RingSignature{
-			trxExpenseSig,
-		},
+	trxFee := expenses.CreateExpenseForTests(trxExpenseContent, []signature.RingSignature{
+		trxExpenseSig,
 	})
 
 	trxFees := []expenses.Expense{

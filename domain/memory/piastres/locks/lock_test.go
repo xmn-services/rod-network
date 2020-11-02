@@ -6,7 +6,6 @@ import (
 
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 )
 
 func TestLock_Success(t *testing.T) {
@@ -20,28 +19,40 @@ func TestLock_Success(t *testing.T) {
 	secondHash, _ := hashAdapter.FromBytes([]byte(secondPK.PublicKey().String()))
 	thirdHash, _ := hashAdapter.FromBytes([]byte(thirdPK.PublicKey().String()))
 
-	shareholders := []shareholders.ShareHolder{
-		shareholders.CreateShareHolderForTests(52, *firstHash),
-		shareholders.CreateShareHolderForTests(49, *secondHash),
-		shareholders.CreateShareHolderForTests(1, *thirdHash),
+	pubKeys := []hash.Hash{
+		*firstHash,
+		*secondHash,
+		*thirdHash,
 	}
 
-	treeshold := uint(51)
-	lockIns := CreateLockForTests(shareholders, treeshold)
+	lockIns := CreateLockForTests(pubKeys)
 
-	if len(lockIns.ShareHolders()) != len(shareholders) {
-		t.Errorf("%d shareholders were expected, %d returned", len(shareholders), len(lockIns.ShareHolders()))
+	if len(lockIns.PublicKeys()) != len(pubKeys) {
+		t.Errorf("%d PublicKey were expected, %d returned", len(pubKeys), len(lockIns.PublicKeys()))
 		return
 	}
 
-	if lockIns.Treeshold() != treeshold {
-		t.Errorf("the treeshold is invalid, expected: %d, returned: %d", treeshold, lockIns.Treeshold())
+	ringPubKeys := []signature.PublicKey{
+		firstPK.PublicKey(),
+		secondPK.PublicKey(),
+		thirdPK.PublicKey(),
+	}
+
+	sig, err := firstPK.RingSign(lockIns.Hash().String(), ringPubKeys)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	err = lockIns.Unlock(sig)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}
 
 	// repository and service:
 	repository, service := CreateRepositoryServiceForTests()
-	err := service.Save(lockIns)
+	err = service.Save(lockIns)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return

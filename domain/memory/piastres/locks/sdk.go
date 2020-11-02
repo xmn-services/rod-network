@@ -3,7 +3,6 @@ package locks
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	transfer_lock "github.com/xmn-services/rod-network/domain/transfers/piastres/locks"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
@@ -14,20 +13,18 @@ import (
 // NewService creates a new service instance
 func NewService(
 	repository Repository,
-	shareHolderService shareholders.Service,
 	trService transfer_lock.Service,
 ) Service {
 	adapter := NewAdapter()
-	return createService(adapter, repository, shareHolderService, trService)
+	return createService(adapter, repository, trService)
 }
 
 // NewRepository creates a new repository instance
 func NewRepository(
-	shareHolderRepository shareholders.Repository,
 	trRepository transfer_lock.Repository,
 ) Repository {
 	builder := NewBuilder()
-	return createRepository(shareHolderRepository, trRepository, builder)
+	return createRepository(trRepository, builder)
 }
 
 // NewAdapter creates a new adapter instance
@@ -54,8 +51,7 @@ type Adapter interface {
 // Builder represents a lock builder
 type Builder interface {
 	Create() Builder
-	WithShareHolders(shareHolders []shareholders.ShareHolder) Builder
-	WithTreeshold(treeshold uint) Builder
+	WithPublicKeys(pubKeys []hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Lock, error)
 }
@@ -63,9 +59,8 @@ type Builder interface {
 // Lock represents a lock
 type Lock interface {
 	entities.Immutable
-	ShareHolders() []shareholders.ShareHolder
-	Treeshold() uint
-	Unlock(signatures []signature.RingSignature) error
+	PublicKeys() []hash.Hash
+	Unlock(signature signature.RingSignature) error
 }
 
 // Repository represents a lock repository

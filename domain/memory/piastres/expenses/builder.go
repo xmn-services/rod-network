@@ -13,7 +13,7 @@ type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	content          Content
-	signatures       [][]signature.RingSignature
+	signatures       []signature.RingSignature
 }
 
 func createBuilder(
@@ -42,7 +42,7 @@ func (app *builder) WithContent(content Content) Builder {
 }
 
 // WithSignatures add ring signatures to the builder
-func (app *builder) WithSignatures(sigs [][]signature.RingSignature) Builder {
+func (app *builder) WithSignatures(sigs []signature.RingSignature) Builder {
 	app.signatures = sigs
 	return app
 }
@@ -59,7 +59,7 @@ func (app *builder) Now() (Expense, error) {
 
 	from := app.content.From()
 	if len(app.signatures) != len(from) {
-		str := fmt.Sprintf("there must be the same amount of ring signatures (%d) as from bills (%d)", len(app.signatures), len(from))
+		str := fmt.Sprintf("there must be the same amount of signatures (%d) as there is bills (%d)", len(app.signatures), len(from))
 		return nil, errors.New(str)
 	}
 
@@ -74,10 +74,8 @@ func (app *builder) Now() (Expense, error) {
 		app.content.Hash().Bytes(),
 	}
 
-	for _, oneSignatureList := range app.signatures {
-		for _, oneSignature := range oneSignatureList {
-			data = append(data, []byte(oneSignature.String()))
-		}
+	for _, oneSignature := range app.signatures {
+		data = append(data, []byte(oneSignature.String()))
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)

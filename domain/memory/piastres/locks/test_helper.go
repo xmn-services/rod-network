@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/file"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	transfer_lock "github.com/xmn-services/rod-network/domain/transfers/piastres/locks"
+	"github.com/xmn-services/rod-network/libs/file"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // CreateLockForTests create lock for tests
-func CreateLockForTests(holders []shareholders.ShareHolder, treeshold uint) Lock {
+func CreateLockForTests(publicKeys []hash.Hash) Lock {
 	createdOn := time.Now().UTC()
-	lock, err := NewBuilder().Create().WithShareHolders(holders).WithTreeshold(treeshold).CreatedOn(createdOn).Now()
+	lock, err := NewBuilder().Create().WithPublicKeys(publicKeys).CreatedOn(createdOn).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -24,12 +24,11 @@ func CreateLockForTests(holders []shareholders.ShareHolder, treeshold uint) Lock
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
 func CreateRepositoryServiceForTests() (Repository, Service) {
-	holderRepository, holderService := shareholders.CreateRepositoryServiceForTests()
 	fileRepositoryService := file.CreateRepositoryServiceForTests()
 	trRepository := transfer_lock.NewRepository(fileRepositoryService)
 	trService := transfer_lock.NewService(fileRepositoryService)
-	repository := NewRepository(holderRepository, trRepository)
-	service := NewService(repository, holderService, trService)
+	repository := NewRepository(trRepository)
+	service := NewService(repository, trService)
 	return repository, service
 }
 

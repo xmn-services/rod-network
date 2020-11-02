@@ -6,7 +6,6 @@ import (
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 // NewService creates a new service instance
@@ -42,9 +41,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	WithShareHolders(shareHolders hashtree.HashTree) Builder
-	WithTreeshold(treeshold uint) Builder
-	WithAmount(amount uint) Builder
+	WithPublicKeys(pubKeys []hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Lock, error)
 }
@@ -52,9 +49,7 @@ type Builder interface {
 // Lock represents a lock
 type Lock interface {
 	entities.Immutable
-	ShareHolders() hashtree.HashTree
-	Treeshold() uint
-	Amount() uint
+	PublicKeys() []hash.Hash
 }
 
 // Repository represents a lock repository

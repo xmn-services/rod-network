@@ -2,20 +2,16 @@ package locks
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	shareHolders     hashtree.HashTree
-	treeshold        uint
-	amount           uint
+	pubKeys          []hash.Hash
 	createdOn        *time.Time
 }
 
@@ -25,9 +21,7 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		shareHolders:     nil,
-		treeshold:        0,
-		amount:           0,
+		pubKeys:          nil,
 		createdOn:        nil,
 	}
 
@@ -45,21 +39,9 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 	return app
 }
 
-// WithShareHolders adds shareholder's hashes to the builder
-func (app *builder) WithShareHolders(shareHolders hashtree.HashTree) Builder {
-	app.shareHolders = shareHolders
-	return app
-}
-
-// WithTreeshold adds a treeshold to the builder
-func (app *builder) WithTreeshold(treeshold uint) Builder {
-	app.treeshold = treeshold
-	return app
-}
-
-// WithAmount adds the amount of shareholders to the builder
-func (app *builder) WithAmount(amount uint) Builder {
-	app.amount = amount
+// WithPublicKeys adds pubkey's hashes to the builder
+func (app *builder) WithPublicKeys(pubKeys []hash.Hash) Builder {
+	app.pubKeys = pubKeys
 	return app
 }
 
@@ -75,23 +57,8 @@ func (app *builder) Now() (Lock, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Lock instance")
 	}
 
-	if app.shareHolders == nil {
-		return nil, errors.New("the shareholder hashes are mandatory in order to build a Lock instance")
-	}
-
-	if app.treeshold <= 0 {
-		return nil, errors.New("the treeshold is mandatory in order to build a Lock instance")
-	}
-
-	if app.amount <= 0 {
-		return nil, errors.New("the amount of shareholders must be greater than zero (0)")
-	}
-
-	leaves := app.shareHolders.Compact().Leaves().Leaves()
-	max := len(leaves)
-	if app.amount > uint(max) {
-		str := fmt.Sprintf("the maximum amount of shareholders is: %d, %d provided", max, app.amount)
-		return nil, errors.New(str)
+	if app.pubKeys == nil {
+		return nil, errors.New("the pubkey hashes are mandatory in order to build a Lock instance")
 	}
 
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
@@ -99,5 +66,5 @@ func (app *builder) Now() (Lock, error) {
 		return nil, err
 	}
 
-	return createLock(immutable, app.shareHolders, app.treeshold, app.amount), nil
+	return createLock(immutable, app.pubKeys), nil
 }

@@ -11,14 +11,12 @@ import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type current struct {
 	hashAdapter        hash.Adapter
-	shareHolderBuilder shareholders.Builder
 	lockBuilder        locks.Builder
 	billBuilder        bills.Builder
 	genesisBuilder     genesis.Builder
@@ -34,7 +32,6 @@ type current struct {
 
 func createCurrent(
 	hashAdapter hash.Adapter,
-	shareHolderBuilder shareholders.Builder,
 	lockBuilder locks.Builder,
 	billBuilder bills.Builder,
 	genesisBuilder genesis.Builder,
@@ -49,7 +46,6 @@ func createCurrent(
 ) Current {
 	out := current{
 		hashAdapter:        hashAdapter,
-		shareHolderBuilder: shareHolderBuilder,
 		lockBuilder:        lockBuilder,
 		billBuilder:        billBuilder,
 		genesisBuilder:     genesisBuilder,
@@ -71,7 +67,6 @@ func (app *current) Init(
 	name string,
 	password string,
 	seed string,
-	power uint,
 	walletName string,
 	amountUnits uint64,
 	blockDifficultyBase uint,
@@ -96,14 +91,9 @@ func (app *current) Init(
 		return err
 	}
 
-	shareHolder, err := app.shareHolderBuilder.Create().WithKey(*pubKeyHash).WithPower(power).CreatedOn(createdOn).Now()
-	if err != nil {
-		return err
-	}
-
-	lock, err := app.lockBuilder.Create().WithShareHolders([]shareholders.ShareHolder{
-		shareHolder,
-	}).WithTreeshold(power).CreatedOn(createdOn).Now()
+	lock, err := app.lockBuilder.Create().WithPublicKeys([]hash.Hash{
+		*pubKeyHash,
+	}).CreatedOn(createdOn).Now()
 
 	if err != nil {
 		return err

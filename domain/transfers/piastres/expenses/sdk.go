@@ -45,7 +45,7 @@ type Builder interface {
 	WithAmount(amount uint64) Builder
 	From(from []hash.Hash) Builder
 	WithLock(lock hash.Hash) Builder
-	WithSignatures(signatures [][]signature.RingSignature) Builder
+	WithSignatures(signatures []signature.RingSignature) Builder
 	WithRemaining(remaining hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Expense, error)
@@ -57,7 +57,7 @@ type Expense interface {
 	Amount() uint64
 	From() []hash.Hash
 	Lock() hash.Hash
-	Signatures() [][]signature.RingSignature
+	Signatures() []signature.RingSignature
 	HasRemaining() bool
 	Remaining() *hash.Hash
 }

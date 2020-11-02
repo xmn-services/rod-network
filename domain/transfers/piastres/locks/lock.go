@@ -6,14 +6,11 @@ import (
 
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type lock struct {
-	immutable    entities.Immutable
-	shareholders hashtree.HashTree
-	treeshold    uint
-	amount       uint
+	immutable entities.Immutable
+	pubKeys   []hash.Hash
 }
 
 func createLockFromJSON(ins *jsonLock) (Lock, error) {
@@ -23,37 +20,31 @@ func createLockFromJSON(ins *jsonLock) (Lock, error) {
 		return nil, err
 	}
 
-	ht, err := hashtree.NewAdapter().FromJSON(ins.ShareHolders)
-	if err != nil {
-		return nil, err
-	}
+	pubKeys := []hash.Hash{}
+	for _, onePubKeyStr := range ins.PublicKeys {
+		pubKey, err := hashAdapter.FromString(onePubKeyStr)
+		if err != nil {
+			return nil, err
+		}
 
-	shareHolders, err := ht.Leaves().HashTree()
-	if err != nil {
-		return nil, err
+		pubKeys = append(pubKeys, *pubKey)
 	}
 
 	return NewBuilder().
 		Create().
 		WithHash(*hsh).
-		WithShareHolders(shareHolders).
-		WithTreeshold(ins.Treeshold).
-		WithAmount(ins.Amount).
+		WithPublicKeys(pubKeys).
 		CreatedOn(ins.CreatedOn).
 		Now()
 }
 
 func createLock(
 	immutable entities.Immutable,
-	shareholders hashtree.HashTree,
-	treeshold uint,
-	amount uint,
+	pubKeys []hash.Hash,
 ) Lock {
 	out := lock{
-		immutable:    immutable,
-		shareholders: shareholders,
-		treeshold:    treeshold,
-		amount:       amount,
+		immutable: immutable,
+		pubKeys:   pubKeys,
 	}
 
 	return &out
@@ -64,19 +55,9 @@ func (obj *lock) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// ShareHolders returns the shareholder's hashtree
-func (obj *lock) ShareHolders() hashtree.HashTree {
-	return obj.shareholders
-}
-
-// Treeshold returns the treeshold
-func (obj *lock) Treeshold() uint {
-	return obj.treeshold
-}
-
-// Amount returns the amount of shareholders
-func (obj *lock) Amount() uint {
-	return obj.amount
+// PublicKeys returns the public keys
+func (obj *lock) PublicKeys() []hash.Hash {
+	return obj.pubKeys
 }
 
 // CreatedOn returns the creation time
@@ -105,8 +86,6 @@ func (obj *lock) UnmarshalJSON(data []byte) error {
 
 	insLock := pr.(*lock)
 	obj.immutable = insLock.immutable
-	obj.shareholders = insLock.shareholders
-	obj.treeshold = insLock.treeshold
-	obj.amount = insLock.amount
+	obj.pubKeys = insLock.pubKeys
 	return nil
 }

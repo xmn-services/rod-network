@@ -24,10 +24,8 @@ func TestExpense_Success(t *testing.T) {
 	}
 
 	sig, _ := pk.RingSign(hsh.String(), ring)
-	signatures := [][]signature.RingSignature{
-		[]signature.RingSignature{
-			sig,
-		},
+	signatures := []signature.RingSignature{
+		sig,
 	}
 
 	from := []hash.Hash{
@@ -117,10 +115,8 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 	}
 
 	sig, _ := pk.RingSign(hsh.String(), ring)
-	signatures := [][]signature.RingSignature{
-		[]signature.RingSignature{
-			sig,
-		},
+	signatures := []signature.RingSignature{
+		sig,
 	}
 
 	from := []hash.Hash{

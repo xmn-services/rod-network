@@ -12,7 +12,7 @@ import (
 type expense struct {
 	immutable  entities.Immutable
 	content    Content
-	signatures [][]signature.RingSignature
+	signatures []signature.RingSignature
 }
 
 func createExpenseFromJSON(ins *JSONExpense) (Expense, error) {
@@ -22,19 +22,14 @@ func createExpenseFromJSON(ins *JSONExpense) (Expense, error) {
 	}
 
 	ringSigAdapter := signature.NewRingSignatureAdapter()
-	signatures := [][]signature.RingSignature{}
-	for _, oneSigList := range ins.Signatures {
-		signaturesList := []signature.RingSignature{}
-		for _, oneSigStr := range oneSigList {
-			sig, err := ringSigAdapter.ToSignature(oneSigStr)
-			if err != nil {
-				return nil, err
-			}
-
-			signaturesList = append(signaturesList, sig)
+	signatures := []signature.RingSignature{}
+	for _, oneSigStr := range ins.Signatures {
+		sig, err := ringSigAdapter.ToSignature(oneSigStr)
+		if err != nil {
+			return nil, err
 		}
 
-		signatures = append(signatures, signaturesList)
+		signatures = append(signatures, sig)
 	}
 
 	return NewBuilder().Create().WithContent(content).WithSignatures(signatures).Now()
@@ -43,7 +38,7 @@ func createExpenseFromJSON(ins *JSONExpense) (Expense, error) {
 func createExpense(
 	immutable entities.Immutable,
 	content Content,
-	signatures [][]signature.RingSignature,
+	signatures []signature.RingSignature,
 ) Expense {
 	out := expense{
 		immutable:  immutable,
@@ -65,7 +60,7 @@ func (obj *expense) Content() Content {
 }
 
 // Signatures returns the signatures
-func (obj *expense) Signatures() [][]signature.RingSignature {
+func (obj *expense) Signatures() []signature.RingSignature {
 	return obj.signatures
 }
 

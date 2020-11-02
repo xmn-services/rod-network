@@ -9,47 +9,42 @@ import (
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 )
 
 type lock struct {
-	immutable    entities.Immutable
-	shareholders []shareholders.ShareHolder
-	mp           map[string]shareholders.ShareHolder
-	treshold     uint
+	immutable entities.Immutable
+	pubKeys   []hash.Hash
+	mpKeys    map[string]hash.Hash
 }
 
 func createLockFromJSON(ins *JSONLock) (Lock, error) {
-	holders := []shareholders.ShareHolder{}
-	shareHolderAdapter := shareholders.NewAdapter()
-	for _, oneJSONHolder := range ins.ShareHolders {
-		holder, err := shareHolderAdapter.ToShareHolder(oneJSONHolder)
+	hashAdapter := hash.NewAdapter()
+	publicKeys := []hash.Hash{}
+	for _, onePubKeyStr := range ins.PublicKeys {
+		hsh, err := hashAdapter.FromString(onePubKeyStr)
 		if err != nil {
 			return nil, err
 		}
 
-		holders = append(holders, holder)
+		publicKeys = append(publicKeys, *hsh)
 	}
 
 	return NewBuilder().
 		Create().
-		WithShareHolders(holders).
-		WithTreeshold(ins.Treeshold).
+		WithPublicKeys(publicKeys).
 		CreatedOn(ins.CreatedOn).
 		Now()
 }
 
 func createLock(
 	immutable entities.Immutable,
-	shareholders []shareholders.ShareHolder,
-	mp map[string]shareholders.ShareHolder,
-	treshold uint,
+	pubKeys []hash.Hash,
+	mpKeys map[string]hash.Hash,
 ) Lock {
 	out := lock{
-		immutable:    immutable,
-		shareholders: shareholders,
-		mp:           mp,
-		treshold:     treshold,
+		immutable: immutable,
+		pubKeys:   pubKeys,
+		mpKeys:    mpKeys,
 	}
 
 	return &out
@@ -60,14 +55,9 @@ func (obj *lock) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// ShareHolders returns the shareholders
-func (obj *lock) ShareHolders() []shareholders.ShareHolder {
-	return obj.shareholders
-}
-
-// Treeshold returns the treshold
-func (obj *lock) Treeshold() uint {
-	return obj.treshold
+// PublicKeys returns the publickeys
+func (obj *lock) PublicKeys() []hash.Hash {
+	return obj.pubKeys
 }
 
 // CreatedOn returns the creation time
@@ -76,53 +66,35 @@ func (obj *lock) CreatedOn() time.Time {
 }
 
 // Unlock verifies if the given combination unlocks the current lock
-func (obj *lock) Unlock(signatures []signature.RingSignature) error {
+func (obj *lock) Unlock(signature signature.RingSignature) error {
+	ring := signature.Ring()
+	ringMp := map[string]hash.Hash{}
 	hashAdapter := hash.NewAdapter()
-	getShareHolder := func(ring []signature.PublicKey, shareholders map[string]shareholders.ShareHolder) (shareholders.ShareHolder, error) {
-		for _, oneRingKey := range ring {
-			ringKeyHash, err := hashAdapter.FromBytes([]byte(oneRingKey.String()))
-			if err != nil {
-				return nil, err
-			}
-
-			ringKeyStr := ringKeyHash.String()
-			if shareHolder, ok := shareholders[ringKeyStr]; ok {
-				return shareHolder, nil
-			}
-		}
-
-		return nil, errors.New("at least 1 Signature that does not fit our []ShareHolder was provided")
-	}
-
-	power := uint(0)
-	already := map[string]shareholders.ShareHolder{}
-	for _, oneSignature := range signatures {
-		ring := oneSignature.Ring()
-		shareHolder, err := getShareHolder(ring, obj.mp)
+	for _, oneRingPubKey := range ring {
+		ringHash, err := hashAdapter.FromBytes([]byte(oneRingPubKey.String()))
 		if err != nil {
 			return err
 		}
 
-		ringKey := shareHolder.Key().String()
-		if _, ok := already[ringKey]; ok {
-			continue
+		keyname := ringHash.String()
+		if _, ok := obj.mpKeys[keyname]; !ok {
+			return errors.New("at least 1 PublicKey contained in the RingSignature was not in the lock's PublicKey list")
 		}
 
-		// validate the signature:
-		if !oneSignature.Verify(obj.immutable.Hash().String()) {
-			return errors.New("at least 1 Signature was invalid")
-		}
-
-		// add the power:
-		power += shareHolder.Power()
-		already[ringKey] = shareHolder
+		ringMp[keyname] = *ringHash
 	}
 
-	if power < obj.Treeshold() {
-		str := fmt.Sprintf("the Lock could not be unlocked because it doesn't have enough power (provided: %d, expected: %d)", power, obj.Treeshold())
+	if len(ringMp) != len(obj.mpKeys) {
+		str := fmt.Sprintf("the RingSignature provided contains %d unique PublicKey, while the Lock contains %d unique PublicKey", len(ring), len(obj.mpKeys))
 		return errors.New(str)
 	}
 
+	// validate the signature:
+	if !signature.Verify(obj.immutable.Hash().String()) {
+		return errors.New("the signature is invalid")
+	}
+
+	// the signature is valid:
 	return nil
 }
 
@@ -147,8 +119,7 @@ func (obj *lock) UnmarshalJSON(data []byte) error {
 
 	insLock := pr.(*lock)
 	obj.immutable = insLock.immutable
-	obj.shareholders = insLock.shareholders
-	obj.treshold = insLock.treshold
-	obj.mp = insLock.mp
+	obj.pubKeys = insLock.pubKeys
+	obj.mpKeys = insLock.mpKeys
 	return nil
 }

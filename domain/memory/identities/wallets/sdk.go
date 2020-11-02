@@ -3,7 +3,6 @@ package wallets
 import (
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 )
 
@@ -18,5 +17,5 @@ type Builder interface {
 type Wallets interface {
 	All() []wallet.Wallet
 	Transact(trx transactions.Transaction) error
-	Fetch(amount uint64) ([]bills.Bill, []shareholders.ShareHolder, uint, error)
+	Fetch(amount uint64) ([]bills.Bill, error)
 }

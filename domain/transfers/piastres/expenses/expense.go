@@ -14,7 +14,7 @@ type expense struct {
 	amount     uint64
 	from       []hash.Hash
 	lock       hash.Hash
-	signatures [][]signature.RingSignature
+	signatures []signature.RingSignature
 	remaining  *hash.Hash
 }
 
@@ -41,19 +41,14 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 	}
 
 	ringSigAdapter := signature.NewRingSignatureAdapter()
-	signatures := [][]signature.RingSignature{}
-	for _, oneSigList := range ins.Signatures {
-		signaturesList := []signature.RingSignature{}
-		for _, oneSigStr := range oneSigList {
-			sig, err := ringSigAdapter.ToSignature(oneSigStr)
-			if err != nil {
-				return nil, err
-			}
-
-			signaturesList = append(signaturesList, sig)
+	signatures := []signature.RingSignature{}
+	for _, oneSigStr := range ins.Signatures {
+		sig, err := ringSigAdapter.ToSignature(oneSigStr)
+		if err != nil {
+			return nil, err
 		}
 
-		signatures = append(signatures, signaturesList)
+		signatures = append(signatures, sig)
 	}
 
 	builder := NewBuilder().Create().
@@ -81,7 +76,7 @@ func createExpense(
 	amount uint64,
 	from []hash.Hash,
 	lock hash.Hash,
-	signatures [][]signature.RingSignature,
+	signatures []signature.RingSignature,
 ) Expense {
 	return createExpenseInternally(immutable, amount, from, lock, signatures, nil)
 }
@@ -91,7 +86,7 @@ func createExpenseWithRemaining(
 	amount uint64,
 	from []hash.Hash,
 	lock hash.Hash,
-	signatures [][]signature.RingSignature,
+	signatures []signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
 	return createExpenseInternally(immutable, amount, from, lock, signatures, remaining)
@@ -102,7 +97,7 @@ func createExpenseInternally(
 	amount uint64,
 	from []hash.Hash,
 	lock hash.Hash,
-	signatures [][]signature.RingSignature,
+	signatures []signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
 	out := expense{
@@ -143,7 +138,7 @@ func (obj *expense) CreatedOn() time.Time {
 }
 
 // Signatures returns the signatures
-func (obj *expense) Signatures() [][]signature.RingSignature {
+func (obj *expense) Signatures() []signature.RingSignature {
 	return obj.signatures
 }
 

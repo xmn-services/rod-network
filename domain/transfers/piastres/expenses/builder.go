@@ -15,7 +15,7 @@ type builder struct {
 	amount           uint64
 	from             []hash.Hash
 	lock             *hash.Hash
-	signatures       [][]signature.RingSignature
+	signatures       []signature.RingSignature
 	remaining        *hash.Hash
 	createdOn        *time.Time
 }
@@ -67,7 +67,7 @@ func (app *builder) WithLock(lock hash.Hash) Builder {
 }
 
 // WithSignatures adds signatures hash to the builder
-func (app *builder) WithSignatures(signatures [][]signature.RingSignature) Builder {
+func (app *builder) WithSignatures(signatures []signature.RingSignature) Builder {
 	app.signatures = signatures
 	return app
 }

@@ -64,7 +64,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithContent(content Content) Builder
-	WithSignatures(sigs [][]signature.RingSignature) Builder
+	WithSignatures(sigs []signature.RingSignature) Builder
 	Now() (Expense, error)
 }
 
@@ -72,7 +72,7 @@ type Builder interface {
 type Expense interface {
 	entities.Immutable
 	Content() Content
-	Signatures() [][]signature.RingSignature
+	Signatures() []signature.RingSignature
 }
 
 // ContentBuilder represents a content builder

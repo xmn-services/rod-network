@@ -2,40 +2,36 @@ package locks
 
 import (
 	"time"
-
-	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type jsonLock struct {
-	Hash         string                `json:"hash"`
-	ShareHolders *hashtree.JSONCompact `json:"shareholders"`
-	Treeshold    uint                  `json:"treeshold"`
-	Amount       uint                  `json:"amount"`
-	CreatedOn    time.Time             `json:"created_on"`
+	Hash       string    `json:"hash"`
+	PublicKeys []string  `json:"pubkeys"`
+	CreatedOn  time.Time `json:"created_on"`
 }
 
 func createJSONLockFromLock(ins Lock) *jsonLock {
 	hash := ins.Hash().String()
-	holders := hashtree.NewAdapter().ToJSON(ins.ShareHolders().Compact())
-	treeshold := ins.Treeshold()
-	amount := ins.Amount()
+
+	pubKeys := []string{}
+	list := ins.PublicKeys()
+	for _, onePubKey := range list {
+		pubKeys = append(pubKeys, onePubKey.String())
+	}
+
 	createdOn := ins.CreatedOn()
-	return createJSONLock(hash, holders, treeshold, amount, createdOn)
+	return createJSONLock(hash, pubKeys, createdOn)
 }
 
 func createJSONLock(
 	hash string,
-	shareholders *hashtree.JSONCompact,
-	treeshold uint,
-	amount uint,
+	pubKeys []string,
 	createdOn time.Time,
 ) *jsonLock {
 	out := jsonLock{
-		Hash:         hash,
-		ShareHolders: shareholders,
-		Treeshold:    treeshold,
-		Amount:       amount,
-		CreatedOn:    createdOn,
+		Hash:       hash,
+		PublicKeys: pubKeys,
+		CreatedOn:  createdOn,
 	}
 
 	return &out

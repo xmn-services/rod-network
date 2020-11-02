@@ -11,6 +11,7 @@ import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type current struct {
@@ -49,23 +50,27 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 		for _, oneFee := range fees {
 			amount := oneFee.Amount()
 			feeLock := oneFee.Lock()
-			walletBills, shareHolders, treeshold, err := app.identity.Wallets().Fetch(amount)
+			walletBills, err := app.identity.Wallets().Fetch(amount)
 			if err != nil {
 				return err
 			}
 
-			pks := [][]signature.PrivateKey{}
+			pks := []signature.PrivateKey{}
 			bills := []bills.Bill{}
 			for _, oneWalletBill := range walletBills {
 				bill := oneWalletBill.Bill()
-				pk := oneWalletBill.PrivateKeys()
+				pk := oneWalletBill.PrivateKey()
 
 				bills = append(bills, bill)
 				pks = append(pks, pk)
 			}
 
+			remainingPK := app.pkFactory.Create()
+			ringPublicKeys := []signature.PublicKey{}
+			lockPublicKeys := []hash.Hash{}
+
 			lockCreatedOn := time.Now().UTC()
-			remaining, err := app.lockBuilder.Create().WithShareHolders(shareHolders).WithTreeshold(treeshold).CreatedOn(lockCreatedOn).Now()
+			remaining, err := app.lockBuilder.Create().WithPublicKeys(lockPublicKeys).CreatedOn(lockCreatedOn).Now()
 			if err != nil {
 				return err
 			}
@@ -77,34 +82,29 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 			}
 
 			msg := expenseContent.Hash().String()
-			signatures := [][]signature.RingSignature{}
-			for _, onePKList := range pks {
-				signatureList := []signature.RingSignature{}
-				for _, onePK := range onePKList {
-					s1 := rand.NewSource(time.Now().UnixNano())
-					r1 := rand.New(s1)
-					insert := r1.Intn(app.amountAdditionalPubKeysPerShareHolderPerRing)
+			signatures := []signature.RingSignature{}
+			for _, onePK := range pks {
+				s1 := rand.NewSource(time.Now().UnixNano())
+				r1 := rand.New(s1)
+				insert := r1.Intn(app.amountAdditionalPubKeysPerShareHolderPerRing)
 
-					pubKeys := []signature.PublicKey{}
-					for i := 0; i < app.amountAdditionalPubKeysPerShareHolderPerRing; i++ {
-						pubKey := app.pkFactory.Create().PublicKey()
-						pubKeys = append(pubKeys, pubKey)
+				pubKeys := []signature.PublicKey{}
+				for i := 0; i < app.amountAdditionalPubKeysPerShareHolderPerRing; i++ {
+					pubKey := app.pkFactory.Create().PublicKey()
+					pubKeys = append(pubKeys, pubKey)
 
-						// insert the current PK's pubkey:
-						if i == insert {
-							pubKeys = append(pubKeys, onePK.PublicKey())
-						}
+					// insert the current PK's pubkey:
+					if i == insert {
+						pubKeys = append(pubKeys, onePK.PublicKey())
 					}
-
-					ringSig, err := onePK.RingSign(msg, pubKeys)
-					if err != nil {
-						return err
-					}
-
-					signatureList = append(signatureList, ringSig)
 				}
 
-				signatures = append(signatures, signatureList)
+				ringSig, err := onePK.RingSign(msg, pubKeys)
+				if err != nil {
+					return err
+				}
+
+				signatures = append(signatures, ringSig)
 			}
 
 			expense, err := app.expenseBuilder.Create().WithContent(expenseContent).WithSignatures(signatures).Now()

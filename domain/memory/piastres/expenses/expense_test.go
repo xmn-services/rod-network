@@ -7,7 +7,6 @@ import (
 
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks/shareholders"
 	"github.com/xmn-services/rod-network/libs/cryptography/pk/signature"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
@@ -23,14 +22,13 @@ func TestExpense_Success(t *testing.T) {
 	secondHash, _ := hashAdapter.FromBytes([]byte(secondPK.PublicKey().String()))
 	thirdHash, _ := hashAdapter.FromBytes([]byte(thirdPK.PublicKey().String()))
 
-	shareholders := []shareholders.ShareHolder{
-		shareholders.CreateShareHolderForTests(52, *firstHash),
-		shareholders.CreateShareHolderForTests(49, *secondHash),
-		shareholders.CreateShareHolderForTests(1, *thirdHash),
+	pubKeys := []hash.Hash{
+		*firstHash,
+		*secondHash,
+		*thirdHash,
 	}
 
-	treeshold := uint(51)
-	lock := locks.CreateLockForTests(shareholders, treeshold)
+	lock := locks.CreateLockForTests(pubKeys)
 
 	billAmount := uint64(56)
 	bill := bills.CreateBillForTests(lock, billAmount)
@@ -48,12 +46,8 @@ func TestExpense_Success(t *testing.T) {
 
 	msg := bill.Lock().Hash().String()
 	firstSig, _ := firstPK.RingSign(msg, ring)
-	secondSig, _ := secondPK.RingSign(msg, ring)
-	signatures := [][]signature.RingSignature{
-		[]signature.RingSignature{
-			firstSig,
-			secondSig,
-		},
+	signatures := []signature.RingSignature{
+		firstSig,
 	}
 
 	expenseIns := CreateExpenseForTests(content, signatures)

@@ -12,7 +12,8 @@ import (
 type Builder interface {
 	Create() Builder
 	WithBill(bill bills.Bill) Builder
-	WithPrivateKeys(pks []signature.PrivateKey) Builder
+	WithPrivateKey(pk signature.PrivateKey) Builder
+	WithRingKeys(ringKeys []signature.PublicKey) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Bill, error)
 }
@@ -21,5 +22,7 @@ type Builder interface {
 type Bill interface {
 	entities.Immutable
 	Bill() bills.Bill
-	PrivateKeys() []signature.PrivateKey
+	PrivateKey() signature.PrivateKey
+	RingKeys() []signature.PublicKey
+	Sign() (signature.RingSignature, error)
 }

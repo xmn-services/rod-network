@@ -7,24 +7,23 @@ import (
 
 	"github.com/xmn-services/rod-network/libs/file"
 	"github.com/xmn-services/rod-network/libs/hash"
-	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 func TestLock_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
 
-	blocks := [][]byte{
-		[]byte("to build the first shareholder hash..."),
-		[]byte("to build the first shareholder hash..."),
+	firstPubKey, _ := hashAdapter.FromBytes([]byte("to build the first pubkey hash..."))
+	secondPubKey, _ := hashAdapter.FromBytes([]byte("to build the second pubkey hash..."))
+
+	pubkeys := []hash.Hash{
+		*firstPubKey,
+		*secondPubKey,
 	}
 
-	holders, _ := hashtree.NewBuilder().Create().WithBlocks(blocks).Now()
-	treeshold := uint(12)
-	amount := uint(len(blocks))
 	createdOn := time.Now().UTC()
 
-	lock, err := NewBuilder().Create().WithHash(*hsh).WithShareHolders(holders).WithTreeshold(treeshold).WithAmount(amount).CreatedOn(createdOn).Now()
+	lock, err := NewBuilder().Create().WithHash(*hsh).WithPublicKeys(pubkeys).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -35,18 +34,8 @@ func TestLock_Success(t *testing.T) {
 		return
 	}
 
-	if !reflect.DeepEqual(holders, lock.ShareHolders()) {
-		t.Errorf("the shareholders are invalid")
-		return
-	}
-
-	if lock.Treeshold() != treeshold {
-		t.Errorf("the treeshold is invalid, expected: %d, returned: %d", treeshold, lock.Treeshold())
-		return
-	}
-
-	if lock.Amount() != amount {
-		t.Errorf("the amount is invalid, expected: %d, returned: %d", amount, lock.Amount())
+	if !reflect.DeepEqual(pubkeys, lock.PublicKeys()) {
+		t.Errorf("the pubkeys are invalid")
 		return
 	}
 
@@ -74,45 +63,4 @@ func TestLock_Success(t *testing.T) {
 
 	// compare:
 	TestCompare(t, lock, retLock)
-}
-
-func TestLock_withZeroAmount_returnsError(t *testing.T) {
-	hashAdapter := hash.NewAdapter()
-	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-
-	blocks := [][]byte{
-		[]byte("to build the first shareholder hash..."),
-		[]byte("to build the first shareholder hash..."),
-	}
-
-	holders, _ := hashtree.NewBuilder().Create().WithBlocks(blocks).Now()
-	treeshold := uint(12)
-	createdOn := time.Now().UTC()
-
-	_, err := NewBuilder().Create().WithHash(*hsh).WithShareHolders(holders).WithTreeshold(treeshold).WithAmount(0).CreatedOn(createdOn).Now()
-	if err == nil {
-		t.Errorf("the error was expected to be valid, nil returned")
-		return
-	}
-}
-
-func TestLock_withAmountTooBig_returnsError(t *testing.T) {
-	hashAdapter := hash.NewAdapter()
-	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-
-	blocks := [][]byte{
-		[]byte("to build the first shareholder hash..."),
-		[]byte("to build the first shareholder hash..."),
-	}
-
-	holders, _ := hashtree.NewBuilder().Create().WithBlocks(blocks).Now()
-	treeshold := uint(12)
-	amount := uint(len(blocks) + 1)
-	createdOn := time.Now().UTC()
-
-	_, err := NewBuilder().Create().WithHash(*hsh).WithShareHolders(holders).WithTreeshold(treeshold).WithAmount(amount).CreatedOn(createdOn).Now()
-	if err == nil {
-		t.Errorf("the error was expected to be valid, nil returned")
-		return
-	}
 }

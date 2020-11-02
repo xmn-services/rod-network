@@ -14,7 +14,7 @@ import (
 )
 
 // CreateExpenseForTests creates an expense instance for tests
-func CreateExpenseForTests(content Content, signatures [][]signature.RingSignature) Expense {
+func CreateExpenseForTests(content Content, signatures []signature.RingSignature) Expense {
 	ins, err := NewBuilder().Create().WithContent(content).WithSignatures(signatures).Now()
 	if err != nil {
 		panic(err)

@@ -3,10 +3,10 @@ package genesis
 import (
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	transfer_genesis "github.com/xmn-services/rod-network/domain/transfers/piastres/genesis"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // NewService creates a new service instance
