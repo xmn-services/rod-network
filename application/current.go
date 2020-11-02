@@ -45,5 +45,11 @@ func (app *current) Authenticate(name string, seed string, password string) (app
 		return nil, err
 	}
 
-	return app.identityAppBuilder.Create().WithIdentity(identity).WithPassword(password).Now()
+	iName := identity.Name()
+	iSeed := identity.Seed()
+	return app.identityAppBuilder.Create().
+		WithName(iName).
+		WithSeed(iSeed).
+		WithPassword(password).
+		Now()
 }

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/domain/memory/identities"
-	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	wallet_bills "github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
@@ -24,7 +23,6 @@ type current struct {
 	genesisService     genesis.Service
 	identityRepository identities.Repository
 	walletBillBuilder  wallet_bills.Builder
-	walletsBuilder     wallets.Builder
 	walletBuilder      wallet.Builder
 	identityBuilder    identities.Builder
 	identityService    identities.Service
@@ -39,7 +37,6 @@ func createCurrent(
 	genesisService genesis.Service,
 	identityRepository identities.Repository,
 	walletBillBuilder wallet_bills.Builder,
-	walletsBuilder wallets.Builder,
 	walletBuilder wallet.Builder,
 	identityBuilder identities.Builder,
 	identityService identities.Service,
@@ -53,7 +50,6 @@ func createCurrent(
 		genesisService:     genesisService,
 		identityRepository: identityRepository,
 		walletBillBuilder:  walletBillBuilder,
-		walletsBuilder:     walletsBuilder,
 		walletBuilder:      walletBuilder,
 		identityBuilder:    identityBuilder,
 		identityService:    identityService,
@@ -137,12 +133,21 @@ func (app *current) Init(
 	wallets = append(wallets, wallet)
 
 	buckets := identity.Buckets().All()
-	updatedIdentity, err := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root).WithWallets(wallets).WithBuckets(buckets).CreatedOn(identityCreatedOn).LastUpdatedOn(lastUpdatedOn).Now()
+	updatedIdentity, err := app.identityBuilder.Create().
+		WithSeed(seed).
+		WithName(name).
+		WithRoot(root).
+		WithWallets(wallets).
+		WithBuckets(buckets).
+		CreatedOn(identityCreatedOn).
+		LastUpdatedOn(lastUpdatedOn).
+		Now()
+
 	if err != nil {
 		return err
 	}
 
-	err = app.identityService.Update(updatedIdentity, password, password)
+	err = app.identityService.Update(identity.Hash(), updatedIdentity, password, password)
 	if err != nil {
 		return err
 	}

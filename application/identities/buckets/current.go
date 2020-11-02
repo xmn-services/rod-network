@@ -24,10 +24,12 @@ type current struct {
 	bucketRepository      buckets.Repository
 	bucketService         buckets.Service
 	identityBucketBuilder identity_buckets.Builder
+	identityRepository    identities.Repository
 	identityService       identities.Service
 	identityBuilder       identities.Builder
-	identity              identities.Identity
+	name                  string
 	password              string
+	seed                  string
 	chunkSizeInBytes      uint
 }
 
@@ -40,10 +42,12 @@ func createCurrent(
 	bucketRepository buckets.Repository,
 	bucketService buckets.Service,
 	identityBucketBuilder identity_buckets.Builder,
+	identityRepository identities.Repository,
 	identityService identities.Service,
 	identityBuilder identities.Builder,
-	identity identities.Identity,
+	name string,
 	password string,
+	seed string,
 	chunkSizeInBytes uint,
 ) Current {
 	out := current{
@@ -55,10 +59,12 @@ func createCurrent(
 		bucketRepository:      bucketRepository,
 		bucketService:         bucketService,
 		identityBucketBuilder: identityBucketBuilder,
+		identityRepository:    identityRepository,
 		identityService:       identityService,
 		identityBuilder:       identityBuilder,
-		identity:              identity,
+		name:                  name,
 		password:              password,
+		seed:                  seed,
 		chunkSizeInBytes:      chunkSizeInBytes,
 	}
 
@@ -95,20 +101,32 @@ func (app *current) Add(absolutePath string) error {
 		return err
 	}
 
-	err = app.identity.Buckets().Add(identityBucket)
+	// retrieve identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
 	if err != nil {
 		return err
 	}
 
-	return app.identityService.Update(app.identity, app.password, app.password)
+	err = identity.Buckets().Add(identityBucket)
+	if err != nil {
+		return err
+	}
+
+	return app.identityService.Update(identity.Hash(), identity, app.password, app.password)
 }
 
 // Delete deletes a bucket from the given path
 func (app *current) Delete(absolutePath string) error {
-	buckets := app.identity.Buckets().All()
+	// retrieve identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return err
+	}
+
+	buckets := identity.Buckets().All()
 	for _, oneBucket := range buckets {
 		if oneBucket.AbsolutePath() == absolutePath {
-			err := app.identity.Buckets().Delete(oneBucket)
+			err := identity.Buckets().Delete(oneBucket)
 			if err != nil {
 				return err
 			}
@@ -117,7 +135,7 @@ func (app *current) Delete(absolutePath string) error {
 		}
 	}
 
-	return app.identityService.Update(app.identity, app.password, app.password)
+	return app.identityService.Update(identity.Hash(), identity, app.password, app.password)
 }
 
 func (app *current) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {

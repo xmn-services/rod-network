@@ -3,23 +3,29 @@ package identities
 import "github.com/xmn-services/rod-network/domain/memory/identities"
 
 type current struct {
-	identityBuilder identities.Builder
-	identityService identities.Service
-	identity        identities.Identity
-	password        string
+	identityBuilder    identities.Builder
+	identityRepository identities.Repository
+	identityService    identities.Service
+	name               string
+	password           string
+	seed               string
 }
 
 func createCurrent(
 	identityBuilder identities.Builder,
+	identityRepository identities.Repository,
 	identityService identities.Service,
-	identity identities.Identity,
+	name string,
 	password string,
+	seed string,
 ) Current {
 	out := current{
-		identityBuilder: identityBuilder,
-		identityService: identityService,
-		identity:        identity,
-		password:        password,
+		identityBuilder:    identityBuilder,
+		identityRepository: identityRepository,
+		identityService:    identityService,
+		name:               name,
+		password:           password,
+		seed:               seed,
 	}
 
 	return &out
@@ -27,9 +33,16 @@ func createCurrent(
 
 // Update updates the identity
 func (app *current) Update(update Update) error {
-	seed := app.identity.Seed()
-	name := app.identity.Name()
-	root := app.identity.Root()
+	// retrieve the identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return err
+	}
+
+	// retrieve the identity:
+	seed := identity.Seed()
+	name := identity.Name()
+	root := identity.Root()
 	newPassword := app.password
 	builder := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root)
 	if update.HasSeed() {
@@ -57,9 +70,8 @@ func (app *current) Update(update Update) error {
 	}
 
 	err = app.identityService.Update(
+		identity.Hash(),
 		updatedIdentity,
-		name,
-		seed,
 		app.password,
 		newPassword,
 	)
@@ -73,13 +85,17 @@ func (app *current) Update(update Update) error {
 }
 
 // Retrieve retrieves the identity
-func (app *current) Retrieve() identities.Identity {
-	return app.identity
+func (app *current) Retrieve() (identities.Identity, error) {
+	return app.identityRepository.Retrieve(app.name, app.password, app.seed)
 }
 
 // Delete deletes the identity
 func (app *current) Delete() error {
-	name := app.identity.Name()
-	seed := app.identity.Seed()
-	return app.identityService.Delete(name, seed, app.password)
+	// retrieve the identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return err
+	}
+
+	return app.identityService.Delete(identity, app.password)
 }

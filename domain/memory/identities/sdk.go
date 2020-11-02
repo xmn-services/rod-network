@@ -8,6 +8,7 @@ import (
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/rod-network/domain/memory/identities/wallets/wallet"
 	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 // Builder represents an identity builder
@@ -35,12 +36,12 @@ type Identity interface {
 
 // Repository represents an identity repository
 type Repository interface {
-	Retrieve(name string, seed string, password string) (Identity, error)
+	Retrieve(name string, password string, seed string) (Identity, error)
 }
 
 // Service represents an identity service
 type Service interface {
 	Insert(identity Identity, password string) error
-	Update(identity Identity, password string, newPassword string) error
+	Update(originalHash hash.Hash, updated Identity, password string, newPassword string) error
 	Delete(identity Identity, password string) error
 }

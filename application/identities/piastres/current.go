@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/xmn-services/rod-network/domain/memory/buckets"
 	"github.com/xmn-services/rod-network/domain/memory/identities"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
@@ -15,21 +14,47 @@ import (
 )
 
 type current struct {
+	hashAdapter                                  hash.Adapter
 	pkFactory                                    signature.PrivateKeyFactory
-	bucketRepository                             buckets.Repository
 	lockBuilder                                  locks.Builder
 	expenseBuilder                               expenses.Builder
 	expenseContentBuilder                        expenses.ContentBuilder
 	trxBuilder                                   transactions.Builder
-	identity                                     identities.Identity
+	identityRepository                           identities.Repository
+	identityService                              identities.Service
+	name                                         string
+	password                                     string
+	seed                                         string
 	amountAdditionalPubKeysPerShareHolderPerRing int
 }
 
 func createCurrent(
-	identity identities.Identity,
+	hashAdapter hash.Adapter,
+	pkFactory signature.PrivateKeyFactory,
+	lockBuilder locks.Builder,
+	expenseBuilder expenses.Builder,
+	expenseContentBuilder expenses.ContentBuilder,
+	trxBuilder transactions.Builder,
+	identityRepository identities.Repository,
+	identityService identities.Service,
+	name string,
+	password string,
+	seed string,
+	amountAdditionalPubKeysPerShareHolderPerRing int,
 ) Current {
 	out := current{
-		identity: identity,
+		hashAdapter:           hashAdapter,
+		pkFactory:             pkFactory,
+		lockBuilder:           lockBuilder,
+		expenseBuilder:        expenseBuilder,
+		expenseContentBuilder: expenseContentBuilder,
+		trxBuilder:            trxBuilder,
+		identityRepository:    identityRepository,
+		identityService:       identityService,
+		name:                  name,
+		password:              password,
+		seed:                  seed,
+		amountAdditionalPubKeysPerShareHolderPerRing: amountAdditionalPubKeysPerShareHolderPerRing,
 	}
 
 	return &out
@@ -37,7 +62,13 @@ func createCurrent(
 
 // Bucket executes a bucket transaction
 func (app *current) Bucket(absolutePath string, fees []Fee) error {
-	bucket, err := app.identity.Buckets().Fetch(absolutePath)
+	// retrieve the identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return err
+	}
+
+	bucket, err := identity.Buckets().Fetch(absolutePath)
 	if err != nil {
 		return err
 	}
@@ -50,24 +81,50 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 		for _, oneFee := range fees {
 			amount := oneFee.Amount()
 			feeLock := oneFee.Lock()
-			walletBills, err := app.identity.Wallets().Fetch(amount)
+			walletBills, err := identity.Wallets().Fetch(amount)
 			if err != nil {
 				return err
 			}
 
-			pks := []signature.PrivateKey{}
 			bills := []bills.Bill{}
-			for _, oneWalletBill := range walletBills {
-				bill := oneWalletBill.Bill()
-				pk := oneWalletBill.PrivateKey()
+			ringPublicKeys := []signature.PublicKey{}
 
+			s1 := rand.NewSource(time.Now().UnixNano())
+			r1 := rand.New(s1)
+			maxPubKeysInRing := r1.Intn(app.amountAdditionalPubKeysPerShareHolderPerRing)
+			maxIndex := int(maxPubKeysInRing / len(walletBills))
+			for _, oneWalletBill := range walletBills {
+				pubKeys := oneWalletBill.RingKeys()
+				for index, onePubKey := range pubKeys {
+					if maxIndex >= (index + 1) {
+						break
+					}
+
+					ringPublicKeys = append(ringPublicKeys, onePubKey)
+				}
+
+				bill := oneWalletBill.Bill()
 				bills = append(bills, bill)
-				pks = append(pks, pk)
 			}
 
 			remainingPK := app.pkFactory.Create()
-			ringPublicKeys := []signature.PublicKey{}
+			ringPublicKeys = append(ringPublicKeys, remainingPK.PublicKey())
+
+			// shuffle the slice of ring public keys:
+			rand.Seed(time.Now().UnixNano())
+			rand.Shuffle(len(ringPublicKeys), func(i, j int) {
+				ringPublicKeys[i], ringPublicKeys[j] = ringPublicKeys[j], ringPublicKeys[i]
+			})
+
 			lockPublicKeys := []hash.Hash{}
+			for _, oneRingPublicKey := range ringPublicKeys {
+				hsh, err := app.hashAdapter.FromString(oneRingPublicKey.String())
+				if err != nil {
+					return err
+				}
+
+				lockPublicKeys = append(lockPublicKeys, *hsh)
+			}
 
 			lockCreatedOn := time.Now().UTC()
 			remaining, err := app.lockBuilder.Create().WithPublicKeys(lockPublicKeys).CreatedOn(lockCreatedOn).Now()
@@ -83,23 +140,10 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 
 			msg := expenseContent.Hash().String()
 			signatures := []signature.RingSignature{}
-			for _, onePK := range pks {
-				s1 := rand.NewSource(time.Now().UnixNano())
-				r1 := rand.New(s1)
-				insert := r1.Intn(app.amountAdditionalPubKeysPerShareHolderPerRing)
-
-				pubKeys := []signature.PublicKey{}
-				for i := 0; i < app.amountAdditionalPubKeysPerShareHolderPerRing; i++ {
-					pubKey := app.pkFactory.Create().PublicKey()
-					pubKeys = append(pubKeys, pubKey)
-
-					// insert the current PK's pubkey:
-					if i == insert {
-						pubKeys = append(pubKeys, onePK.PublicKey())
-					}
-				}
-
-				ringSig, err := onePK.RingSign(msg, pubKeys)
+			for _, oneWalletBill := range walletBills {
+				pk := oneWalletBill.PrivateKey()
+				pubKeys := oneWalletBill.RingKeys()
+				ringSig, err := pk.RingSign(msg, pubKeys)
 				if err != nil {
 					return err
 				}
@@ -124,5 +168,11 @@ func (app *current) Bucket(absolutePath string, fees []Fee) error {
 		return err
 	}
 
-	return app.identity.Wallets().Transact(trx)
+	err = identity.Wallets().Transact(trx)
+	if err != nil {
+		return err
+	}
+
+	// save the identity:
+	return app.identityService.Update(identity.Hash(), identity, app.password, app.password)
 }

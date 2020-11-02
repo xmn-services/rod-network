@@ -10,8 +10,9 @@ import (
 // Builder represents the application builder
 type Builder interface {
 	Create() Builder
-	WithIdentity(identity identities.Identity) Builder
+	WithName(name string) Builder
 	WithPassword(password string) Builder
+	WithSeed(seed string) Builder
 	Now() (Application, error)
 }
 
@@ -24,7 +25,7 @@ type Application interface {
 // Current represents the current application
 type Current interface {
 	Update(update Update) error
-	Retrieve() identities.Identity
+	Retrieve() (identities.Identity, error)
 	Delete() error
 }
 
