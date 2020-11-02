@@ -1,10 +1,10 @@
 package blocks
 
 import (
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	transfer_block "github.com/xmn-services/rod-network/domain/transfers/piastres/blocks"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type repository struct {
@@ -54,11 +54,9 @@ func (app *repository) Retrieve(hsh hash.Hash) (Block, error) {
 		return nil, err
 	}
 
-	address := trBlock.Address()
 	additional := trBlock.Additional()
 	createdOn := trBlock.CreatedOn()
 	return app.builder.Create().
-		WithAddress(address).
 		WithGenesis(gen).
 		WithAdditional(additional).
 		WithTransactions(trx).

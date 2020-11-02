@@ -5,16 +5,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	address          *hash.Hash
 	genesis          genesis.Genesis
 	additional       uint
 	trx              []transactions.Transaction
@@ -28,7 +27,6 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		address:          nil,
 		genesis:          nil,
 		additional:       0,
 		trx:              nil,
@@ -41,12 +39,6 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
-}
-
-// WithAddress adds an address to the builder
-func (app *builder) WithAddress(address hash.Hash) Builder {
-	app.address = &address
-	return app
 }
 
 // WithGenesis adds a genesis to the builder
@@ -75,10 +67,6 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Block instance
 func (app *builder) Now() (Block, error) {
-	if app.address == nil {
-		return nil, errors.New("the address is mandatory in order to build a Block instance")
-	}
-
 	if app.genesis == nil {
 		return nil, errors.New("the genesis instance is mandatory in order to build a Block instance")
 	}
@@ -92,7 +80,6 @@ func (app *builder) Now() (Block, error) {
 	}
 
 	data := [][]byte{
-		app.address.Bytes(),
 		app.genesis.Hash().Bytes(),
 		[]byte(strconv.Itoa(int(app.additional))),
 	}
@@ -111,14 +98,5 @@ func (app *builder) Now() (Block, error) {
 		return nil, err
 	}
 
-	return createBlock(immutable, *app.address, app.genesis, app.additional, app.trx), nil
+	return createBlock(immutable, app.genesis, app.additional, app.trx), nil
 }
-
-/*
-
-address          *hash.Hash
-genesis          genesis.Genesis
-trx              []transactions.Transaction
-createdOn        *time.Time
-
-*/

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions/addresses"
 	transfer_transaction "github.com/xmn-services/rod-network/domain/transfers/piastres/transactions"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
@@ -51,6 +52,7 @@ type Adapter interface {
 // Builder represents a transaction builder
 type Builder interface {
 	Create() Builder
+	WithAddress(address addresses.Address) Builder
 	WithBucket(bucket hash.Hash) Builder
 	WithFees(fees []expenses.Expense) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -60,6 +62,8 @@ type Builder interface {
 // Transaction represents a transaction
 type Transaction interface {
 	entities.Immutable
+	HasAddress() bool
+	Address() addresses.Address
 	HasBucket() bool
 	Bucket() *hash.Hash
 	HasFees() bool

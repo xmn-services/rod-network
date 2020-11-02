@@ -9,7 +9,6 @@ import (
 
 // JSONBlock represents a JSON block instance
 type JSONBlock struct {
-	Address    string                          `json:"address"`
 	Genesis    *genesis.JSONGenesis            `json:"genesis"`
 	Trx        []*transactions.JSONTransaction `json:"transactions"`
 	Additional uint                            `json:"additional"`
@@ -17,8 +16,6 @@ type JSONBlock struct {
 }
 
 func createJSONBlockFromBlock(block Block) *JSONBlock {
-	address := block.Address().String()
-
 	genAdapter := genesis.NewAdapter()
 	gen := genAdapter.ToJSON(block.Genesis())
 
@@ -32,18 +29,16 @@ func createJSONBlockFromBlock(block Block) *JSONBlock {
 
 	additional := block.Additional()
 	createdOn := block.CreatedOn()
-	return createJSONBlock(address, gen, trx, additional, createdOn)
+	return createJSONBlock(gen, trx, additional, createdOn)
 }
 
 func createJSONBlock(
-	address string,
 	gen *genesis.JSONGenesis,
 	trx []*transactions.JSONTransaction,
 	additional uint,
 	createdOn time.Time,
 ) *JSONBlock {
 	out := JSONBlock{
-		Address:    address,
 		Genesis:    gen,
 		Trx:        trx,
 		Additional: additional,

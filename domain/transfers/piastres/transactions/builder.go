@@ -11,6 +11,7 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
+	address          *hash.Hash
 	fees             []hash.Hash
 	bucket           *hash.Hash
 	createdOn        *time.Time
@@ -22,6 +23,7 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
+		address:          nil,
 		fees:             nil,
 		bucket:           nil,
 		createdOn:        nil,
@@ -38,6 +40,12 @@ func (app *builder) Create() Builder {
 // WithHash adds an hash to the builder
 func (app *builder) WithHash(hash hash.Hash) Builder {
 	app.hash = &hash
+	return app
+}
+
+// WithAddress adds an address to the builder
+func (app *builder) WithAddress(address hash.Hash) Builder {
+	app.address = &address
 	return app
 }
 
@@ -65,31 +73,41 @@ func (app *builder) Now() (Transaction, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Transaction instance")
 	}
 
+	if len(app.fees) <= 0 {
+		app.fees = nil
+	}
+
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
 	if err != nil {
 		return nil, err
 	}
 
-	if app.fees != nil {
-		if app.bucket != nil {
-			return createTransactionWithBucketAndFees(
-				immutable,
-				app.bucket,
-				app.fees,
-			), nil
-		}
+	if app.address != nil && app.bucket != nil && app.fees != nil {
+		return createTransactionWithAddressAndBucketAndFees(immutable, app.address, app.bucket, app.fees), nil
+	}
 
-		return createTransactionWithFees(
-			immutable,
-			app.fees,
-		), nil
+	if app.address != nil && app.bucket != nil {
+		return createTransactionWithAddressAndBucket(immutable, app.address, app.bucket), nil
+	}
+
+	if app.address != nil && app.fees != nil {
+		return createTransactionWithAddressAndFees(immutable, app.address, app.fees), nil
+	}
+
+	if app.bucket != nil && app.fees != nil {
+		return createTransactionWithBucketAndFees(immutable, app.bucket, app.fees), nil
+	}
+
+	if app.address != nil {
+		return createTransactionWithAddress(immutable, app.address), nil
 	}
 
 	if app.bucket != nil {
-		return createTransactionWithBucket(
-			immutable,
-			app.bucket,
-		), nil
+		return createTransactionWithBucket(immutable, app.bucket), nil
+	}
+
+	if app.fees != nil {
+		return createTransactionWithFees(immutable, app.fees), nil
 	}
 
 	return nil, errors.New("the Transaction instance is invalid")

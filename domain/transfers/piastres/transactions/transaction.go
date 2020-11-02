@@ -10,6 +10,7 @@ import (
 
 type transaction struct {
 	immutable entities.Immutable
+	address   *hash.Hash
 	bucket    *hash.Hash
 	fees      []hash.Hash
 }
@@ -49,21 +50,53 @@ func createTransactionFromJSON(ins *jsonTransaction) (Transaction, error) {
 		builder.WithBucket(*bucket)
 	}
 
+	if ins.Address != "" {
+		address, err := hashAdapter.FromString(ins.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		builder.WithAddress(*address)
+	}
+
 	return builder.Now()
+}
+
+func createTransactionWithAddress(
+	immutable entities.Immutable,
+	address *hash.Hash,
+) Transaction {
+	return createTransactionInternally(immutable, address, nil, nil)
 }
 
 func createTransactionWithBucket(
 	immutable entities.Immutable,
 	bucket *hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, bucket, nil)
+	return createTransactionInternally(immutable, nil, bucket, nil)
 }
 
 func createTransactionWithFees(
 	immutable entities.Immutable,
 	fees []hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, nil, fees)
+	return createTransactionInternally(immutable, nil, nil, fees)
+}
+
+func createTransactionWithAddressAndFees(
+	immutable entities.Immutable,
+	address *hash.Hash,
+	fees []hash.Hash,
+) Transaction {
+	return createTransactionInternally(immutable, address, nil, fees)
+}
+
+func createTransactionWithAddressAndBucket(
+	immutable entities.Immutable,
+	address *hash.Hash,
+	bucket *hash.Hash,
+) Transaction {
+	return createTransactionInternally(immutable, address, bucket, nil)
 }
 
 func createTransactionWithBucketAndFees(
@@ -71,16 +104,27 @@ func createTransactionWithBucketAndFees(
 	bucket *hash.Hash,
 	fees []hash.Hash,
 ) Transaction {
-	return createTransactionInternally(immutable, bucket, fees)
+	return createTransactionInternally(immutable, nil, bucket, fees)
+}
+
+func createTransactionWithAddressAndBucketAndFees(
+	immutable entities.Immutable,
+	address *hash.Hash,
+	bucket *hash.Hash,
+	fees []hash.Hash,
+) Transaction {
+	return createTransactionInternally(immutable, address, bucket, fees)
 }
 
 func createTransactionInternally(
 	immutable entities.Immutable,
+	address *hash.Hash,
 	bucket *hash.Hash,
 	fees []hash.Hash,
 ) Transaction {
 	out := transaction{
 		immutable: immutable,
+		address:   address,
 		bucket:    bucket,
 		fees:      fees,
 	}
@@ -96,6 +140,16 @@ func (obj *transaction) Hash() hash.Hash {
 // CreatedOn returns the creation time
 func (obj *transaction) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// HasAddress returns true if the transaction contains an address, false otherwise
+func (obj *transaction) HasAddress() bool {
+	return obj.address != nil
+}
+
+// Address returns the address hash, if any
+func (obj *transaction) Address() *hash.Hash {
+	return obj.address
 }
 
 // HasBucket returns true if the transaction is a bucket, false otherwise
@@ -139,6 +193,7 @@ func (obj *transaction) UnmarshalJSON(data []byte) error {
 
 	insTransaction := pr.(*transaction)
 	obj.immutable = insTransaction.immutable
+	obj.address = insTransaction.address
 	obj.fees = insTransaction.fees
 	obj.bucket = insTransaction.bucket
 	return nil

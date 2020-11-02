@@ -55,7 +55,6 @@ type Adapter interface {
 // Builder represents the block builder
 type Builder interface {
 	Create() Builder
-	WithAddress(address hash.Hash) Builder
 	WithGenesis(gen genesis.Genesis) Builder
 	WithAdditional(additional uint) Builder
 	WithTransactions(trx []transactions.Transaction) Builder
@@ -66,7 +65,6 @@ type Builder interface {
 // Block represents a block of transactions
 type Block interface {
 	entities.Immutable
-	Address() hash.Hash
 	Genesis() genesis.Genesis
 	Additional() uint
 	Transactions() []transactions.Transaction

@@ -4,27 +4,20 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type block struct {
 	immutable  entities.Immutable
-	address    hash.Hash
 	genesis    genesis.Genesis
 	additional uint
 	trx        []transactions.Transaction
 }
 
 func createBlockFromJSON(ins *JSONBlock) (Block, error) {
-	hashAdapter := hash.NewAdapter()
-	address, err := hashAdapter.FromString(ins.Address)
-	if err != nil {
-		return nil, err
-	}
-
 	trxAdapter := transactions.NewAdapter()
 	trx := []transactions.Transaction{}
 	for _, oneJSTrx := range ins.Trx {
@@ -44,7 +37,6 @@ func createBlockFromJSON(ins *JSONBlock) (Block, error) {
 
 	return NewBuilder().
 		Create().
-		WithAddress(*address).
 		WithTransactions(trx).
 		WithGenesis(gen).
 		WithAdditional(ins.Additional).
@@ -54,14 +46,12 @@ func createBlockFromJSON(ins *JSONBlock) (Block, error) {
 
 func createBlock(
 	immutable entities.Immutable,
-	address hash.Hash,
 	genesis genesis.Genesis,
 	additional uint,
 	trx []transactions.Transaction,
 ) Block {
 	out := block{
 		immutable:  immutable,
-		address:    address,
 		genesis:    genesis,
 		additional: additional,
 		trx:        trx,
@@ -73,11 +63,6 @@ func createBlock(
 // Hash returns the hash
 func (obj *block) Hash() hash.Hash {
 	return obj.immutable.Hash()
-}
-
-// Address returns the address
-func (obj *block) Address() hash.Hash {
-	return obj.address
 }
 
 // Genesis returns the genesis
@@ -121,7 +106,6 @@ func (obj *block) UnmarshalJSON(data []byte) error {
 
 	insBlock := pr.(*block)
 	obj.immutable = insBlock.immutable
-	obj.address = insBlock.address
 	obj.genesis = insBlock.genesis
 	obj.additional = insBlock.additional
 	obj.trx = insBlock.trx

@@ -57,12 +57,7 @@ func createCurrent(
 }
 
 // Block mines a block
-func (app *current) Block(address string, trx []string) error {
-	addressHash, err := app.hashAdapter.FromString(address)
-	if err != nil {
-		return err
-	}
-
+func (app *current) Block(trx []string) error {
 	trxHashes := []hash.Hash{}
 	for _, oneTrx := range trx {
 		trxHash, err := app.hashAdapter.FromString(oneTrx)
@@ -90,7 +85,6 @@ func (app *current) Block(address string, trx []string) error {
 	createdOn := time.Now().UTC()
 	gen := chain.Genesis()
 	block, err := app.blockBuilder.Create().
-		WithAddress(*addressHash).
 		WithGenesis(gen).
 		WithTransactions(transactions).
 		CreatedOn(createdOn).

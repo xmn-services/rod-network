@@ -12,7 +12,6 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	address          *hash.Hash
 	trx              hashtree.HashTree
 	amount           uint
 	additional       uint
@@ -25,7 +24,6 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		address:          nil,
 		trx:              nil,
 		amount:           0,
 		additional:       0,
@@ -43,12 +41,6 @@ func (app *builder) Create() Builder {
 // WithHash adds an hash to the builder
 func (app *builder) WithHash(hash hash.Hash) Builder {
 	app.hash = &hash
-	return app
-}
-
-// WithAddress adds an address hash to the builder
-func (app *builder) WithAddress(address hash.Hash) Builder {
-	app.address = &address
 	return app
 }
 
@@ -82,10 +74,6 @@ func (app *builder) Now() (Block, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Block instance")
 	}
 
-	if app.address == nil {
-		return nil, errors.New("the address hash is mandatory in order to build a Block instance")
-	}
-
 	if app.trx == nil {
 		return nil, errors.New("the transaction hashtree is mandatory in order to build a Block instance")
 	}
@@ -99,5 +87,5 @@ func (app *builder) Now() (Block, error) {
 		return nil, err
 	}
 
-	return createBlock(immutable, *app.address, app.trx, app.amount, app.additional), nil
+	return createBlock(immutable, app.trx, app.amount, app.additional), nil
 }

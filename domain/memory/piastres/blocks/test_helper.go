@@ -6,19 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/file"
-	"github.com/xmn-services/rod-network/libs/hash"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions"
 	transfer_block "github.com/xmn-services/rod-network/domain/transfers/piastres/blocks"
+	"github.com/xmn-services/rod-network/libs/file"
 )
 
 // CreateBlockForTests creates a block for tests
 func CreateBlockForTests(gen genesis.Genesis, additional uint, trx []transactions.Transaction) Block {
 	createdOn := time.Now().UTC()
-	address, _ := hash.NewAdapter().FromBytes([]byte("lets say this is the address"))
 	ins, err := NewBuilder().Create().
-		WithAddress(*address).
 		WithGenesis(gen).
 		WithAdditional(additional).
 		WithTransactions(trx).

@@ -16,6 +16,6 @@ type Application interface {
 
 // Current represents the current application
 type Current interface {
-	Block(address string, trx []string) error
+	Block(trx []string) error
 	Link(prevMinedLink string, nextBlock string) error
 }

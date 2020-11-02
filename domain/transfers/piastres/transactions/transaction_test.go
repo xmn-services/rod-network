@@ -8,11 +8,12 @@ import (
 	"github.com/xmn-services/rod-network/libs/hash"
 )
 
-func TestTransaction_isBucket_Success(t *testing.T) {
+func TestTransaction_hasBucket_hasFees_hasAddress_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
 	fee, _ := hashAdapter.FromBytes([]byte("to build the fees hash..."))
 	bucket, _ := hashAdapter.FromBytes([]byte("to build the bucket hash..."))
+	address, _ := hashAdapter.FromBytes([]byte("to build the address hash..."))
 
 	fees := []hash.Hash{
 		*fee,
@@ -24,6 +25,7 @@ func TestTransaction_isBucket_Success(t *testing.T) {
 		WithHash(*hsh).
 		WithFees(fees).
 		WithBucket(*bucket).
+		WithAddress(*address).
 		CreatedOn(createdOn).
 		Now()
 
@@ -62,6 +64,16 @@ func TestTransaction_isBucket_Success(t *testing.T) {
 
 	if !transaction.Bucket().Compare(*bucket) {
 		t.Errorf("the bucket is invalid")
+		return
+	}
+
+	if !transaction.HasAddress() {
+		t.Errorf("the address was expected to be valid")
+		return
+	}
+
+	if !transaction.Address().Compare(*address) {
+		t.Errorf("the address is invalid")
 		return
 	}
 

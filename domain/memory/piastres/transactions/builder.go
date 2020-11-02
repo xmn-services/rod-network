@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/domain/memory/piastres/expenses"
+	"github.com/xmn-services/rod-network/domain/memory/piastres/transactions/addresses"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
@@ -12,7 +13,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	triggersOn       *time.Time
+	address          addresses.Address
 	bucket           *hash.Hash
 	fees             []expenses.Expense
 	createdOn        *time.Time
@@ -25,7 +26,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		triggersOn:       nil,
+		address:          nil,
 		bucket:           nil,
 		fees:             nil,
 		createdOn:        nil,
@@ -37,6 +38,12 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
+}
+
+// WithAddress adds an address to the builder
+func (app *builder) WithAddress(address addresses.Address) Builder {
+	app.address = address
+	return app
 }
 
 // WithBucket adds a bucket to the builder
@@ -64,6 +71,10 @@ func (app *builder) Now() (Transaction, error) {
 	}
 
 	data := [][]byte{}
+	if app.address != nil {
+		data = append(data, app.address.Hash().Bytes())
+	}
+
 	if app.bucket != nil {
 		data = append(data, app.bucket.Bytes())
 	}
@@ -84,6 +95,18 @@ func (app *builder) Now() (Transaction, error) {
 		return nil, err
 	}
 
+	if app.address != nil && app.fees != nil && app.bucket != nil {
+		return createTransactionWithAddressAndBucketAndFees(immutable, app.address, app.bucket, app.fees), nil
+	}
+
+	if app.address != nil && app.bucket != nil {
+		return createTransactionWithAddressAndBucket(immutable, app.address, app.bucket), nil
+	}
+
+	if app.address != nil && app.fees != nil {
+		return createTransactionWithAddressAndFees(immutable, app.address, app.fees), nil
+	}
+
 	if app.fees != nil && app.bucket != nil {
 		return createTransactionWithBucketAndFees(immutable, app.bucket, app.fees), nil
 	}
@@ -94,6 +117,10 @@ func (app *builder) Now() (Transaction, error) {
 
 	if app.bucket != nil {
 		return createTransactionWithBucket(immutable, app.bucket), nil
+	}
+
+	if app.address != nil {
+		return createTransactionWithAddress(immutable, app.address), nil
 	}
 
 	return nil, errors.New("the Transaction is invalid")

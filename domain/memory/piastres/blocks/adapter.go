@@ -1,8 +1,8 @@
 package blocks
 
 import (
-	"github.com/xmn-services/rod-network/libs/hashtree"
 	transfer_block "github.com/xmn-services/rod-network/domain/transfers/piastres/blocks"
+	"github.com/xmn-services/rod-network/libs/hashtree"
 )
 
 type adapter struct {
@@ -36,13 +36,11 @@ func (app *adapter) ToTransfer(block Block) (transfer_block.Block, error) {
 	}
 
 	hsh := block.Hash()
-	address := block.Address()
 	additional := block.Additional()
 	amount := uint(len(trx))
 	createdOn := block.CreatedOn()
 	return app.trBuilder.Create().
 		WithHash(hsh).
-		WithAddress(address).
 		WithAdditional(additional).
 		WithTransactions(trxHashtree).
 		WithAmount(amount).

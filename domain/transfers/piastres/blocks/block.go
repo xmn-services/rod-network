@@ -11,7 +11,6 @@ import (
 
 type block struct {
 	immutable  entities.Immutable
-	address    hash.Hash
 	trx        hashtree.HashTree
 	amount     uint
 	additional uint
@@ -20,11 +19,6 @@ type block struct {
 func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 	hashAdapter := hash.NewAdapter()
 	hsh, err := hashAdapter.FromString(ins.Hash)
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := hashAdapter.FromString(ins.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +36,6 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 	return NewBuilder().
 		Create().
 		WithHash(*hsh).
-		WithAddress(*address).
 		WithTransactions(trx).
 		WithAmount(ins.Amount).
 		WithAdditional(ins.Additional).
@@ -52,14 +45,12 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 
 func createBlock(
 	immutable entities.Immutable,
-	address hash.Hash,
 	trx hashtree.HashTree,
 	amount uint,
 	additional uint,
 ) Block {
 	out := block{
 		immutable:  immutable,
-		address:    address,
 		trx:        trx,
 		amount:     amount,
 		additional: additional,
@@ -71,11 +62,6 @@ func createBlock(
 // Hash returns the hash
 func (obj *block) Hash() hash.Hash {
 	return obj.immutable.Hash()
-}
-
-// Address returns the address hash
-func (obj *block) Address() hash.Hash {
-	return obj.address
 }
 
 // Transactions returns the transaction hashtree
@@ -119,7 +105,6 @@ func (obj *block) UnmarshalJSON(data []byte) error {
 
 	insBlock := pr.(*block)
 	obj.immutable = insBlock.immutable
-	obj.address = insBlock.address
 	obj.trx = insBlock.trx
 	obj.amount = insBlock.amount
 	obj.additional = insBlock.additional

@@ -13,7 +13,6 @@ import (
 func TestBlock_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	address, _ := hashAdapter.FromBytes([]byte("to build the address hash..."))
 
 	data := [][]byte{}
 	for i := 0; i < 5; i++ {
@@ -26,7 +25,7 @@ func TestBlock_Success(t *testing.T) {
 	amount := uint(len(data))
 	createdOn := time.Now().UTC()
 
-	block, err := NewBuilder().Create().WithHash(*hsh).WithAddress(*address).WithTransactions(trx).WithAmount(amount).CreatedOn(createdOn).Now()
+	block, err := NewBuilder().Create().WithHash(*hsh).WithTransactions(trx).WithAmount(amount).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -34,11 +33,6 @@ func TestBlock_Success(t *testing.T) {
 
 	if !block.Hash().Compare(*hsh) {
 		t.Errorf("the hash is invalid")
-		return
-	}
-
-	if !block.Address().Compare(*address) {
-		t.Errorf("the address hash is invalid")
 		return
 	}
 

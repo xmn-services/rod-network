@@ -41,6 +41,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
+	WithAddress(address hash.Hash) Builder
 	WithFees(fees []hash.Hash) Builder
 	WithBucket(bucket hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -50,6 +51,8 @@ type Builder interface {
 // Transaction represents a transaction
 type Transaction interface {
 	entities.Immutable
+	HasAddress() bool
+	Address() *hash.Hash
 	HasBucket() bool
 	Bucket() *hash.Hash
 	HasFees() bool

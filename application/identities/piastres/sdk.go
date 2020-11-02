@@ -19,3 +19,13 @@ type Fee interface {
 	Amount() uint64
 	Lock() locks.Lock
 }
+
+// Address represents an address
+type Address interface {
+	HasSender() bool
+	Sender() string
+	HasRecipients() bool
+	Recipients() []string
+	HasSubject() bool
+	Subject() string
+}
