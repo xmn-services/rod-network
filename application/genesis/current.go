@@ -142,7 +142,7 @@ func (app *current) Init(
 		return err
 	}
 
-	err = app.identityService.Update(updatedIdentity, name, seed, password, password)
+	err = app.identityService.Update(updatedIdentity, password, password)
 	if err != nil {
 		return err
 	}

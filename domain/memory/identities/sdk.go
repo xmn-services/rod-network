@@ -41,6 +41,6 @@ type Repository interface {
 // Service represents an identity service
 type Service interface {
 	Insert(identity Identity, password string) error
-	Update(updated Identity, name string, seed string, password string, newPassword string) error
-	Delete(name string, seed string, password string) error
+	Update(identity Identity, password string, newPassword string) error
+	Delete(identity Identity, password string) error
 }

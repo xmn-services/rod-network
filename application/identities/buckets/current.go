@@ -100,7 +100,7 @@ func (app *current) Add(absolutePath string) error {
 		return err
 	}
 
-	return app.identityService.Update(app.identity, app.identity.Name(), app.identity.Seed(), app.password, app.password)
+	return app.identityService.Update(app.identity, app.password, app.password)
 }
 
 // Delete deletes a bucket from the given path
@@ -117,7 +117,7 @@ func (app *current) Delete(absolutePath string) error {
 		}
 	}
 
-	return app.identityService.Update(app.identity, app.identity.Name(), app.identity.Seed(), app.password, app.password)
+	return app.identityService.Update(app.identity, app.password, app.password)
 }
 
 func (app *current) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {
