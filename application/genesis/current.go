@@ -116,10 +116,7 @@ func (app *current) Init(
 		return err
 	}
 
-	walletBill, err := app.walletBillBuilder.Create().WithBill(bill).WithPrivateKeys([]signature.PrivateKey{
-		pk,
-	}).CreatedOn(createdOn).Now()
-
+	walletBill, err := app.walletBillBuilder.Create().WithBill(bill).WithPrivateKey(pk).CreatedOn(createdOn).Now()
 	if err != nil {
 		return err
 	}

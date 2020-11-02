@@ -47,13 +47,12 @@ func CreateContentWithRemainingForTests(amount uint64, from []bills.Bill, remain
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
 func CreateRepositoryServiceForTests() (Repository, Service) {
-	lockRepository, lockService := locks.CreateRepositoryServiceForTests()
 	billRepository, billService := bills.CreateRepositoryServiceForTests()
 	fileRepositoryService := file.CreateRepositoryServiceForTests()
 	trRepository := transfer_expense.NewRepository(fileRepositoryService)
 	trService := transfer_expense.NewService(fileRepositoryService)
-	repository := NewRepository(billRepository, lockRepository, trRepository)
-	service := NewService(repository, billService, lockService, trService)
+	repository := NewRepository(billRepository, trRepository)
+	service := NewService(repository, billService, trService)
 	return repository, service
 }
 

@@ -6,9 +6,8 @@ import (
 
 type jsonExpense struct {
 	Hash       string    `json:"hash"`
-	Amount     uint64    `json:"amount"`
 	From       []string  `json:"from"`
-	Lock       string    `json:"lock"`
+	To         string    `json:"to"`
 	Signatures []string  `json:"signatures"`
 	Remaining  string    `json:"remaining"`
 	CreatedOn  time.Time `json:"created_on"`
@@ -16,7 +15,6 @@ type jsonExpense struct {
 
 func createJSONExpenseFromExpense(ins Expense) *jsonExpense {
 	hash := ins.Hash().String()
-	amount := ins.Amount()
 
 	fromStrs := []string{}
 	from := ins.From()
@@ -35,25 +33,23 @@ func createJSONExpenseFromExpense(ins Expense) *jsonExpense {
 		remaining = ins.Remaining().String()
 	}
 
-	lock := ins.Lock().String()
+	to := ins.To().String()
 	createdOn := ins.CreatedOn()
-	return createJSONExpense(hash, amount, fromStrs, lock, signatures, remaining, createdOn)
+	return createJSONExpense(hash, fromStrs, to, signatures, remaining, createdOn)
 }
 
 func createJSONExpense(
 	hash string,
-	amount uint64,
 	from []string,
-	lock string,
+	to string,
 	signatures []string,
 	remaining string,
 	createdOn time.Time,
 ) *jsonExpense {
 	out := jsonExpense{
 		Hash:       hash,
-		Amount:     amount,
 		From:       from,
-		Lock:       lock,
+		To:         to,
 		Signatures: signatures,
 		Remaining:  remaining,
 		CreatedOn:  createdOn,

@@ -4,15 +4,13 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 )
 
 // JSONContent represents a json content
 type JSONContent struct {
-	Amount    uint64            `json:"amount"`
 	From      []*bills.JSONBill `json:"from"`
-	Lock      *locks.JSONLock   `json:"lock"`
-	Remaining *locks.JSONLock   `json:"remaining"`
+	To        *bills.JSONBill   `json:"to"`
+	Remaining *bills.JSONBill   `json:"remaining"`
 	CreatedOn time.Time         `json:"created_on"`
 }
 
@@ -25,30 +23,26 @@ func createJSONContentFromContent(content Content) *JSONContent {
 		fromJS = append(fromJS, single)
 	}
 
-	locksAdapter := locks.NewAdapter()
-	lock := locksAdapter.ToJSON(content.Lock())
+	to := billsAdapter.ToJSON(content.To())
 
-	var remaining *locks.JSONLock
+	var remaining *bills.JSONBill
 	if content.HasRemaining() {
-		remaining = locksAdapter.ToJSON(content.Remaining())
+		remaining = billsAdapter.ToJSON(content.Remaining())
 	}
 
-	amount := content.Amount()
 	createdOn := content.CreatedOn()
-	return createJSONContent(amount, fromJS, lock, remaining, createdOn)
+	return createJSONContent(fromJS, to, remaining, createdOn)
 }
 
 func createJSONContent(
-	amount uint64,
 	from []*bills.JSONBill,
-	lock *locks.JSONLock,
-	remaining *locks.JSONLock,
+	to *bills.JSONBill,
+	remaining *bills.JSONBill,
 	createdOn time.Time,
 ) *JSONContent {
 	out := JSONContent{
-		Amount:    amount,
 		From:      from,
-		Lock:      lock,
+		To:        to,
 		Remaining: remaining,
 		CreatedOn: createdOn,
 	}

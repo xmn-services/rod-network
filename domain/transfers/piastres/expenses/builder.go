@@ -12,9 +12,8 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	amount           uint64
 	from             []hash.Hash
-	lock             *hash.Hash
+	to               *hash.Hash
 	signatures       []signature.RingSignature
 	remaining        *hash.Hash
 	createdOn        *time.Time
@@ -26,9 +25,8 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		amount:           0,
 		from:             nil,
-		lock:             nil,
+		to:               nil,
 		signatures:       nil,
 		remaining:        nil,
 		createdOn:        nil,
@@ -48,21 +46,15 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 	return app
 }
 
-// WithAmount adds an amount to the builder
-func (app *builder) WithAmount(amount uint64) Builder {
-	app.amount = amount
-	return app
-}
-
 // From adds a from hash to the builder
 func (app *builder) From(from []hash.Hash) Builder {
 	app.from = from
 	return app
 }
 
-// WithLock adds a lock to the builder
-func (app *builder) WithLock(lock hash.Hash) Builder {
-	app.lock = &lock
+// To adds a to hash to the builder
+func (app *builder) To(to hash.Hash) Builder {
+	app.to = &to
 	return app
 }
 
@@ -94,8 +86,8 @@ func (app *builder) Now() (Expense, error) {
 		return nil, errors.New("the from hashes are mandatory in order to build an Expense instance")
 	}
 
-	if app.lock == nil {
-		return nil, errors.New("the lock hash is mandatory in order to build an Expense instance")
+	if app.to == nil {
+		return nil, errors.New("the to hash is mandatory in order to build an Expense instance")
 	}
 
 	if len(app.from) <= 0 {
@@ -116,8 +108,8 @@ func (app *builder) Now() (Expense, error) {
 	}
 
 	if app.remaining != nil {
-		return createExpenseWithRemaining(immutable, app.amount, app.from, *app.lock, app.signatures, app.remaining), nil
+		return createExpenseWithRemaining(immutable, app.from, *app.to, app.signatures, app.remaining), nil
 	}
 
-	return createExpense(immutable, app.amount, app.from, *app.lock, app.signatures), nil
+	return createExpense(immutable, app.from, *app.to, app.signatures), nil
 }

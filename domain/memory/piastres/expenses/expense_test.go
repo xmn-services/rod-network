@@ -32,9 +32,7 @@ func TestExpense_Success(t *testing.T) {
 
 	billAmount := uint64(56)
 	bill := bills.CreateBillForTests(lock, billAmount)
-
-	amount := billAmount - 1
-	content := CreateContentForTests(amount, []bills.Bill{
+	content := CreateContentForTests(billAmount, []bills.Bill{
 		bill,
 	}, lock)
 

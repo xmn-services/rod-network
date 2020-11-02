@@ -5,17 +5,15 @@ import (
 	"time"
 
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type content struct {
 	immutable entities.Immutable
-	amount    uint64
 	from      []bills.Bill
-	lock      locks.Lock
-	remaining locks.Lock
+	to        bills.Bill
+	remaining bills.Bill
 }
 
 func createContentFromJSON(ins *JSONContent) (Content, error) {
@@ -31,25 +29,24 @@ func createContentFromJSON(ins *JSONContent) (Content, error) {
 		from = append(from, single)
 	}
 
-	locksAdapter := locks.NewAdapter()
-	lock, err := locksAdapter.ToLock(ins.Lock)
+	to, err := billsAdapter.ToBill(ins.To)
 	if err != nil {
 		return nil, err
 	}
 
 	builder := NewContentBuilder().Create().
+		WithAmount(to.Amount()).
 		From(from).
-		WithLock(lock).
-		WithAmount(ins.Amount).
+		WithLock(to.Lock()).
 		CreatedOn(ins.CreatedOn)
 
 	if ins.Remaining != nil {
-		remaining, err := locksAdapter.ToLock(ins.Remaining)
+		remaining, err := billsAdapter.ToBill(ins.Remaining)
 		if err != nil {
 			return nil, err
 		}
 
-		builder.WithRemaining(remaining)
+		builder.WithRemaining(remaining.Lock())
 	}
 
 	return builder.Now()
@@ -57,35 +54,31 @@ func createContentFromJSON(ins *JSONContent) (Content, error) {
 
 func createContent(
 	immutable entities.Immutable,
-	amount uint64,
 	from []bills.Bill,
-	lock locks.Lock,
+	to bills.Bill,
 ) Content {
-	return createContentInternally(immutable, amount, from, lock, nil)
+	return createContentInternally(immutable, from, to, nil)
 }
 
 func createContentWithRemaining(
 	immutable entities.Immutable,
-	amount uint64,
 	from []bills.Bill,
-	lock locks.Lock,
-	remaining locks.Lock,
+	to bills.Bill,
+	remaining bills.Bill,
 ) Content {
-	return createContentInternally(immutable, amount, from, lock, remaining)
+	return createContentInternally(immutable, from, to, remaining)
 }
 
 func createContentInternally(
 	immutable entities.Immutable,
-	amount uint64,
 	from []bills.Bill,
-	lock locks.Lock,
-	remaining locks.Lock,
+	to bills.Bill,
+	remaining bills.Bill,
 ) Content {
 	out := content{
 		immutable: immutable,
-		amount:    amount,
 		from:      from,
-		lock:      lock,
+		to:        to,
 		remaining: remaining,
 	}
 
@@ -97,19 +90,14 @@ func (obj *content) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Amount returns the amount
-func (obj *content) Amount() uint64 {
-	return obj.amount
-}
-
 // From returns the from bill
 func (obj *content) From() []bills.Bill {
 	return obj.from
 }
 
-// Lock returns the new lock
-func (obj *content) Lock() locks.Lock {
-	return obj.lock
+// To returns the new bill
+func (obj *content) To() bills.Bill {
+	return obj.to
 }
 
 // HasRemaining returns ture if there is a remaining lock, false otherwise
@@ -117,8 +105,8 @@ func (obj *content) HasRemaining() bool {
 	return obj.remaining != nil
 }
 
-// Remaining returns the remaining lock, if any
-func (obj *content) Remaining() locks.Lock {
+// Remaining returns the remaining bill, if any
+func (obj *content) Remaining() bills.Bill {
 	return obj.remaining
 }
 
@@ -148,9 +136,8 @@ func (obj *content) UnmarshalJSON(data []byte) error {
 
 	insExpense := pr.(*content)
 	obj.immutable = insExpense.immutable
-	obj.amount = insExpense.amount
 	obj.from = insExpense.from
-	obj.lock = insExpense.lock
+	obj.to = insExpense.to
 	obj.remaining = insExpense.remaining
 	return nil
 }

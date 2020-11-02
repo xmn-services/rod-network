@@ -13,9 +13,8 @@ import (
 func TestExpense_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	lock, _ := hashAdapter.FromBytes([]byte("to build the lock hash..."))
+	to, _ := hashAdapter.FromBytes([]byte("to build the to hash..."))
 	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
-	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
 	pk := signature.NewPrivateKeyFactory().Create()
@@ -32,7 +31,7 @@ func TestExpense_Success(t *testing.T) {
 		*fromSingle,
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithLock(*lock).WithAmount(amount).WithSignatures(signatures).CreatedOn(createdOn).Now()
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).To(*to).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -49,8 +48,8 @@ func TestExpense_Success(t *testing.T) {
 		return
 	}
 
-	if !expense.Lock().Compare(*lock) {
-		t.Errorf("the lock hash is invalid")
+	if !expense.To().Compare(*to) {
+		t.Errorf("the to hash is invalid")
 		return
 	}
 
@@ -66,11 +65,6 @@ func TestExpense_Success(t *testing.T) {
 
 	if expense.Remaining() != nil {
 		t.Errorf("the remaining hash was expected to be nil")
-		return
-	}
-
-	if expense.Amount() != amount {
-		t.Errorf("the amount is invalid, expected: %d, returned: %d", amount, expense.Amount())
 		return
 	}
 
@@ -103,10 +97,9 @@ func TestExpense_Success(t *testing.T) {
 func TestExpense_withRemaining_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	lock, _ := hashAdapter.FromBytes([]byte("to build the lock hash..."))
+	to, _ := hashAdapter.FromBytes([]byte("to build the to hash..."))
 	fromSingle, _ := hashAdapter.FromBytes([]byte("to build the from hash..."))
 	remaining, _ := hashAdapter.FromBytes([]byte("to build the remaining hash..."))
-	amount := uint64(56)
 	createdOn := time.Now().UTC()
 
 	pk := signature.NewPrivateKeyFactory().Create()
@@ -123,7 +116,7 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 		*fromSingle,
 	}
 
-	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).WithLock(*lock).WithAmount(amount).WithRemaining(*remaining).WithSignatures(signatures).CreatedOn(createdOn).Now()
+	expense, err := NewBuilder().Create().WithHash(*hsh).From(from).To(*to).WithRemaining(*remaining).WithSignatures(signatures).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -140,8 +133,8 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 		return
 	}
 
-	if !expense.Lock().Compare(*lock) {
-		t.Errorf("the lock hash is invalid")
+	if !expense.To().Compare(*to) {
+		t.Errorf("the to hash is invalid")
 		return
 	}
 
@@ -157,11 +150,6 @@ func TestExpense_withRemaining_Success(t *testing.T) {
 
 	if !expense.Remaining().Compare(*remaining) {
 		t.Errorf("the remaining hash is invalid")
-		return
-	}
-
-	if expense.Amount() != amount {
-		t.Errorf("the amount is invalid, expected: %d, returned: %d", amount, expense.Amount())
 		return
 	}
 

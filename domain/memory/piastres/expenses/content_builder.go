@@ -15,9 +15,10 @@ import (
 type contentBuilder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
+	billBuilder      bills.Builder
 	amount           uint64
 	from             []bills.Bill
-	lock      locks.Lock
+	lock             locks.Lock
 	remaining        locks.Lock
 	createdOn        *time.Time
 }
@@ -25,13 +26,15 @@ type contentBuilder struct {
 func createContentBuilder(
 	hashAdapter hash.Adapter,
 	immutableBuilder entities.ImmutableBuilder,
+	billBuilder bills.Builder,
 ) ContentBuilder {
 	out := contentBuilder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
+		billBuilder:      billBuilder,
 		amount:           0,
 		from:             nil,
-		lock: nil,
+		lock:             nil,
 		remaining:        nil,
 		createdOn:        nil,
 	}
@@ -41,7 +44,7 @@ func createContentBuilder(
 
 // Create initializes the contentBuilder
 func (app *contentBuilder) Create() ContentBuilder {
-	return createContentBuilder(app.hashAdapter, app.immutableBuilder)
+	return createContentBuilder(app.hashAdapter, app.immutableBuilder, app.billBuilder)
 }
 
 // WithAmount adds an amount to the contentBuilder
@@ -94,10 +97,17 @@ func (app *contentBuilder) Now() (Content, error) {
 		return nil, errors.New(str)
 	}
 
+	remainingAmount := total - app.amount
 	if app.remaining != nil {
-		remaining := total - app.amount
-		if remaining <= 0 {
+		if remainingAmount <= 0 {
 			return nil, errors.New("the remaining lock was expected to be nil since the bill was totally spent")
+		}
+	}
+
+	if app.remaining == nil {
+		if remainingAmount > 0 {
+			str := fmt.Sprintf("the remaining lock was expected since there is a remaining amount (%d)", remainingAmount)
+			return nil, errors.New(str)
 		}
 	}
 
@@ -124,9 +134,19 @@ func (app *contentBuilder) Now() (Content, error) {
 		return nil, err
 	}
 
-	if app.remaining != nil {
-		return createContentWithRemaining(immutable, app.amount, app.from, app.lock, app.remaining), nil
+	to, err := app.billBuilder.Create().WithAmount(app.amount).WithLock(app.lock).CreatedOn(immutable.CreatedOn()).Now()
+	if err != nil {
+		return nil, err
 	}
 
-	return createContent(immutable, app.amount, app.from, app.lock), nil
+	if app.remaining != nil {
+		remaining, err := app.billBuilder.Create().WithAmount(remainingAmount).WithLock(app.remaining).CreatedOn(immutable.CreatedOn()).Now()
+		if err != nil {
+			return nil, err
+		}
+
+		return createContentWithRemaining(immutable, app.from, to, remaining), nil
+	}
+
+	return createContent(immutable, app.from, to), nil
 }

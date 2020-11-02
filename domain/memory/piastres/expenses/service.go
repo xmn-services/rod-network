@@ -2,7 +2,6 @@ package expenses
 
 import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
 )
 
@@ -10,7 +9,6 @@ type service struct {
 	adapter     Adapter
 	repository  Repository
 	billService bills.Service
-	lockService locks.Service
 	trService   transfer_expense.Service
 }
 
@@ -18,14 +16,12 @@ func createService(
 	adapter Adapter,
 	repository Repository,
 	billService bills.Service,
-	lockService locks.Service,
 	trService transfer_expense.Service,
 ) Service {
 	out := service{
 		adapter:     adapter,
 		repository:  repository,
 		billService: billService,
-		lockService: lockService,
 		trService:   trService,
 	}
 
@@ -47,15 +43,15 @@ func (app *service) Save(expense Expense) error {
 		return err
 	}
 
-	lock := content.Lock()
-	err = app.lockService.Save(lock)
+	to := content.To()
+	err = app.billService.Save(to)
 	if err != nil {
 		return err
 	}
 
 	if content.HasRemaining() {
 		remaining := content.Remaining()
-		err = app.lockService.Save(remaining)
+		err = app.billService.Save(remaining)
 		if err != nil {
 			return err
 		}

@@ -42,9 +42,8 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	WithAmount(amount uint64) Builder
 	From(from []hash.Hash) Builder
-	WithLock(lock hash.Hash) Builder
+	To(to hash.Hash) Builder
 	WithSignatures(signatures []signature.RingSignature) Builder
 	WithRemaining(remaining hash.Hash) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -54,9 +53,8 @@ type Builder interface {
 // Expense represents an expense
 type Expense interface {
 	entities.Immutable
-	Amount() uint64
 	From() []hash.Hash
-	Lock() hash.Hash
+	To() hash.Hash
 	Signatures() []signature.RingSignature
 	HasRemaining() bool
 	Remaining() *hash.Hash

@@ -15,22 +15,20 @@ import (
 func NewService(
 	repository Repository,
 	billService bills.Service,
-	lockService locks.Service,
 	trService transfer_expense.Service,
 ) Service {
 	adapter := NewAdapter()
-	return createService(adapter, repository, billService, lockService, trService)
+	return createService(adapter, repository, billService, trService)
 }
 
 // NewRepository creates a new repository instance
 func NewRepository(
 	billRepository bills.Repository,
-	lockRepository locks.Repository,
 	trRepository transfer_expense.Repository,
 ) Repository {
 	builder := NewBuilder()
 	contentBuilder := NewContentBuilder()
-	return createRepository(builder, contentBuilder, billRepository, lockRepository, trRepository)
+	return createRepository(builder, contentBuilder, billRepository, trRepository)
 }
 
 // NewAdapter creates a new adapter instance
@@ -50,7 +48,8 @@ func NewBuilder() Builder {
 func NewContentBuilder() ContentBuilder {
 	hashAdapter := hash.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
-	return createContentBuilder(hashAdapter, immutableBuilder)
+	billBuilder := bills.NewBuilder()
+	return createContentBuilder(hashAdapter, immutableBuilder, billBuilder)
 }
 
 // Adapter returns the expense adapter
@@ -89,11 +88,10 @@ type ContentBuilder interface {
 // Content represents an expense content
 type Content interface {
 	entities.Immutable
-	Amount() uint64
 	From() []bills.Bill
-	Lock() locks.Lock
+	To() bills.Bill
 	HasRemaining() bool
-	Remaining() locks.Lock
+	Remaining() bills.Bill
 }
 
 // Repository represents an expense repository

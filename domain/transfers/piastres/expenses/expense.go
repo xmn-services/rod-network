@@ -11,9 +11,8 @@ import (
 
 type expense struct {
 	immutable  entities.Immutable
-	amount     uint64
 	from       []hash.Hash
-	lock       hash.Hash
+	to         hash.Hash
 	signatures []signature.RingSignature
 	remaining  *hash.Hash
 }
@@ -35,7 +34,7 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 		from = append(from, *oneFrom)
 	}
 
-	lock, err := hashAdapter.FromString(ins.Lock)
+	to, err := hashAdapter.FromString(ins.To)
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +52,8 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 
 	builder := NewBuilder().Create().
 		WithHash(*hsh).
-		WithAmount(ins.Amount).
 		From(from).
-		WithLock(*lock).
+		To(*to).
 		WithSignatures(signatures).
 		CreatedOn(ins.CreatedOn)
 
@@ -73,38 +71,34 @@ func createExpenseFromJSON(ins *jsonExpense) (Expense, error) {
 
 func createExpense(
 	immutable entities.Immutable,
-	amount uint64,
 	from []hash.Hash,
-	lock hash.Hash,
+	to hash.Hash,
 	signatures []signature.RingSignature,
 ) Expense {
-	return createExpenseInternally(immutable, amount, from, lock, signatures, nil)
+	return createExpenseInternally(immutable, from, to, signatures, nil)
 }
 
 func createExpenseWithRemaining(
 	immutable entities.Immutable,
-	amount uint64,
 	from []hash.Hash,
-	lock hash.Hash,
+	to hash.Hash,
 	signatures []signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
-	return createExpenseInternally(immutable, amount, from, lock, signatures, remaining)
+	return createExpenseInternally(immutable, from, to, signatures, remaining)
 }
 
 func createExpenseInternally(
 	immutable entities.Immutable,
-	amount uint64,
 	from []hash.Hash,
-	lock hash.Hash,
+	to hash.Hash,
 	signatures []signature.RingSignature,
 	remaining *hash.Hash,
 ) Expense {
 	out := expense{
 		immutable:  immutable,
-		amount:     amount,
 		from:       from,
-		lock:       lock,
+		to:         to,
 		signatures: signatures,
 		remaining:  remaining,
 	}
@@ -117,19 +111,14 @@ func (obj *expense) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Amount returns the amount
-func (obj *expense) Amount() uint64 {
-	return obj.amount
-}
-
 // From returns the from hash
 func (obj *expense) From() []hash.Hash {
 	return obj.from
 }
 
-// Lock returns the lock hash
-func (obj *expense) Lock() hash.Hash {
-	return obj.lock
+// To returns the to hash
+func (obj *expense) To() hash.Hash {
+	return obj.to
 }
 
 // CreatedOn returns the creation time
@@ -173,9 +162,8 @@ func (obj *expense) UnmarshalJSON(data []byte) error {
 
 	insExpense := pr.(*expense)
 	obj.immutable = insExpense.immutable
-	obj.amount = insExpense.amount
 	obj.from = insExpense.from
-	obj.lock = insExpense.lock
+	obj.to = insExpense.to
 	obj.signatures = insExpense.signatures
 	obj.remaining = insExpense.remaining
 	return nil

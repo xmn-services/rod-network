@@ -24,8 +24,7 @@ func (app *adapter) ToTransfer(expense Expense) (transfer_expense.Expense, error
 	hsh := expense.Hash()
 	sigs := expense.Signatures()
 	content := expense.Content()
-	amount := content.Amount()
-	lockHash := content.Lock().Hash()
+	toHash := content.To().Hash()
 	createdOn := content.CreatedOn()
 
 	fromHashes := []hash.Hash{}
@@ -36,9 +35,8 @@ func (app *adapter) ToTransfer(expense Expense) (transfer_expense.Expense, error
 
 	builder := app.trBuilder.Create().
 		WithHash(hsh).
-		WithAmount(amount).
 		From(fromHashes).
-		WithLock(lockHash).
+		To(toHash).
 		WithSignatures(sigs).
 		CreatedOn(createdOn)
 

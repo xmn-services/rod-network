@@ -2,7 +2,6 @@ package expenses
 
 import (
 	"github.com/xmn-services/rod-network/domain/memory/piastres/bills"
-	"github.com/xmn-services/rod-network/domain/memory/piastres/locks"
 	transfer_expense "github.com/xmn-services/rod-network/domain/transfers/piastres/expenses"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
@@ -11,7 +10,6 @@ type repository struct {
 	builder        Builder
 	contentBuilder ContentBuilder
 	billRepository bills.Repository
-	lockRepository locks.Repository
 	trRepository   transfer_expense.Repository
 }
 
@@ -19,14 +17,12 @@ func createRepository(
 	builder Builder,
 	contentBuilder ContentBuilder,
 	billRepository bills.Repository,
-	lockRepository locks.Repository,
 	trRepository transfer_expense.Repository,
 ) Repository {
 	out := repository{
 		builder:        builder,
 		contentBuilder: contentBuilder,
 		billRepository: billRepository,
-		lockRepository: lockRepository,
 		trRepository:   trRepository,
 	}
 
@@ -46,23 +42,24 @@ func (app *repository) Retrieve(hash hash.Hash) (Expense, error) {
 		return nil, err
 	}
 
-	lockHash := trExpense.Lock()
-	lock, err := app.lockRepository.Retrieve(lockHash)
+	toHash := trExpense.To()
+	to, err := app.billRepository.Retrieve(toHash)
 	if err != nil {
 		return nil, err
 	}
 
-	amount := trExpense.Amount()
+	amount := to.Amount()
+	lock := to.Lock()
 	createdOn := trExpense.CreatedOn()
 	builder := app.contentBuilder.Create().WithAmount(amount).CreatedOn(createdOn).From(bills).WithLock(lock)
 	if trExpense.HasRemaining() {
-		lockHash := trExpense.Remaining()
-		lock, err := app.lockRepository.Retrieve(*lockHash)
+		remBillHash := trExpense.Remaining()
+		remaining, err := app.billRepository.Retrieve(*remBillHash)
 		if err != nil {
 			return nil, err
 		}
 
-		builder.WithRemaining(lock)
+		builder.WithRemaining(remaining.Lock())
 	}
 
 	content, err := builder.Now()
