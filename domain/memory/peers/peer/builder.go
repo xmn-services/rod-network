@@ -2,35 +2,27 @@ package peer
 
 import (
 	"errors"
-	"strconv"
-	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
 	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type builder struct {
-	hashAdapter      hash.Adapter
-	immutableBuilder entities.ImmutableBuilder
-	host             string
-	port             uint
-	isClear          bool
-	isOnion          bool
-	createdOn        *time.Time
+	hashAdapter hash.Adapter
+	host        string
+	port        uint
+	isClear     bool
+	isOnion     bool
 }
 
 func createBuilder(
 	hashAdapter hash.Adapter,
-	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		hashAdapter:      hashAdapter,
-		immutableBuilder: immutableBuilder,
-		host:             "",
-		port:             0,
-		isClear:          false,
-		isOnion:          false,
-		createdOn:        nil,
+		hashAdapter: hashAdapter,
+		host:        "",
+		port:        0,
+		isClear:     false,
+		isOnion:     false,
 	}
 
 	return &out
@@ -38,7 +30,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.immutableBuilder)
+	return createBuilder(app.hashAdapter)
 }
 
 // WithHost adds a host to the builder
@@ -65,12 +57,6 @@ func (app *builder) IsOnion() Builder {
 	return app
 }
 
-// CreatedOn adds a creation time to the builder
-func (app *builder) CreatedOn(createdOn time.Time) Builder {
-	app.createdOn = &createdOn
-	return app
-}
-
 // Now builds a new Peer instance
 func (app *builder) Now() (Peer, error) {
 	if app.host == "" {
@@ -81,26 +67,12 @@ func (app *builder) Now() (Peer, error) {
 		return nil, errors.New("the port is mandatory in order to build a Peer instance")
 	}
 
-	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(app.host),
-		[]byte(strconv.Itoa(int(app.port))),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
-	if err != nil {
-		return nil, err
-	}
-
 	if app.isClear {
-		return createPeerWithClear(immutable, app.host, app.port), nil
+		return createPeerWithClear(app.host, app.port), nil
 	}
 
 	if app.isOnion {
-		return createPeerWithOnion(immutable, app.host, app.port), nil
+		return createPeerWithOnion(app.host, app.port), nil
 	}
 
 	return nil, errors.New("the Peer is invalid")

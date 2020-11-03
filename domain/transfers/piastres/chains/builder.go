@@ -14,7 +14,7 @@ type builder struct {
 	genesis          *hash.Hash
 	root             *hash.Hash
 	head             *hash.Hash
-	height           uint
+	total            uint
 	createdOn        *time.Time
 }
 
@@ -27,7 +27,7 @@ func createBuilder(
 		genesis:          nil,
 		root:             nil,
 		head:             nil,
-		height:           0,
+		total:            0,
 		createdOn:        nil,
 	}
 
@@ -63,9 +63,9 @@ func (app *builder) WithHead(head hash.Hash) Builder {
 	return app
 }
 
-// WithHeight adds an height to the builder
-func (app *builder) WithHeight(height uint) Builder {
-	app.height = height
+// WithTotal adds a total to the builder
+func (app *builder) WithTotal(total uint) Builder {
+	app.total = total
 	return app
 }
 
@@ -81,8 +81,8 @@ func (app *builder) Now() (Chain, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Chain instance")
 	}
 
-	if app.height <= 0 {
-		return nil, errors.New("the height must be greater than zero (0) in order to build a Chain instance")
+	if app.total <= 0 {
+		return nil, errors.New("the total must be greater than zero (0) in order to build a Chain instance")
 	}
 
 	if app.genesis == nil {
@@ -102,5 +102,5 @@ func (app *builder) Now() (Chain, error) {
 		return nil, err
 	}
 
-	return createChain(immutable, *app.genesis, *app.root, *app.head, app.height), nil
+	return createChain(immutable, *app.genesis, *app.root, *app.head, app.total), nil
 }

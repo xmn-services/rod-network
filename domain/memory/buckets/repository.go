@@ -48,3 +48,18 @@ func (app *repository) Retrieve(hsh hash.Hash) (Bucket, error) {
 	createdOn := trBucket.CreatedOn()
 	return app.builder.Create().WithFiles(files).CreatedOn(createdOn).Now()
 }
+
+// RetrieveAll retrieves buckets from hashes
+func (app *repository) RetrieveAll(hashes []hash.Hash) ([]Bucket, error) {
+	out := []Bucket{}
+	for _, oneHash := range hashes {
+		bucket, err := app.Retrieve(oneHash)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, bucket)
+	}
+
+	return out, nil
+}

@@ -1,12 +1,13 @@
 package buckets
 
-// Application represents the application
-type Application interface {
-	Current() Current
-}
+import (
+	"github.com/xmn-services/rod-network/domain/memory/buckets"
+	"github.com/xmn-services/rod-network/libs/hash"
+)
 
-// Current represents a bucket current application
-type Current interface {
+// Application represents the bucket application
+type Application interface {
 	Add(absolutePath string) error
 	Delete(absolutePath string) error
+	Retrieve(hash hash.Hash) (buckets.Bucket, error)
 }

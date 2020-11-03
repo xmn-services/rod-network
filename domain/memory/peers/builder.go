@@ -33,5 +33,15 @@ func (app *builder) Now() (Peers, error) {
 		app.peers = []peer.Peer{}
 	}
 
-	return createPeers(app.peers), nil
+	mp := map[string]peer.Peer{}
+	for _, onePeer := range app.peers {
+		mp[onePeer.String()] = onePeer
+	}
+
+	lst := []peer.Peer{}
+	for _, onePeer := range mp {
+		lst = append(lst, onePeer)
+	}
+
+	return createPeers(lst), nil
 }

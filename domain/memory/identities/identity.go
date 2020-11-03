@@ -26,6 +26,17 @@ func createIdentity(
 	wallets wallets.Wallets,
 	buckets buckets.Buckets,
 ) Identity {
+	return createIdentityInternally(mutable, seed, name, root, wallets, buckets)
+}
+
+func createIdentityInternally(
+	mutable entities.Mutable,
+	seed string,
+	name string,
+	root string,
+	wallets wallets.Wallets,
+	buckets buckets.Buckets,
+) Identity {
 	out := identity{
 		mutable: mutable,
 		seed:    seed,

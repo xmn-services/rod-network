@@ -14,10 +14,10 @@ func TestChain_Success(t *testing.T) {
 	genesis, _ := hashAdapter.FromBytes([]byte("to build the genesis hash..."))
 	root, _ := hashAdapter.FromBytes([]byte("to build the root hash..."))
 	head, _ := hashAdapter.FromBytes([]byte("to build the head hash..."))
-	height := uint(56)
+	total := uint(1556)
 	createdOn := time.Now().UTC()
 
-	chain, err := NewBuilder().Create().WithHash(*hsh).WithGenesis(*genesis).WithRoot(*root).WithHead(*head).WithHeight(height).CreatedOn(createdOn).Now()
+	chain, err := NewBuilder().Create().WithHash(*hsh).WithGenesis(*genesis).WithRoot(*root).WithHead(*head).WithTotal(total).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -43,8 +43,8 @@ func TestChain_Success(t *testing.T) {
 		return
 	}
 
-	if chain.Height() != height {
-		t.Errorf("the height is invalid, expected: %d, returned: %d", chain.Height(), height)
+	if chain.Total() != total {
+		t.Errorf("the total is invalid, expected: %d, returned: %d", chain.Total(), total)
 		return
 	}
 

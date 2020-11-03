@@ -16,4 +16,5 @@ type Peer interface {
 	Port() uint
 	IsClear() bool
 	IsOnion() bool
+	String() string
 }

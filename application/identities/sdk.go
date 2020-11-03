@@ -2,8 +2,8 @@ package identities
 
 import (
 	"github.com/xmn-services/rod-network/application/identities/buckets"
+	"github.com/xmn-services/rod-network/application/identities/daemons"
 	"github.com/xmn-services/rod-network/application/identities/piastres"
-	"github.com/xmn-services/rod-network/application/identities/servers"
 	"github.com/xmn-services/rod-network/domain/memory/identities"
 )
 
@@ -33,7 +33,7 @@ type Current interface {
 type SubApplications interface {
 	Bucket() buckets.Application
 	Piastre() piastres.Application
-	Server() servers.Application
+	Daemon() daemons.Application
 }
 
 // UpdateBuilder represents an update builder

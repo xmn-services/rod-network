@@ -66,13 +66,13 @@ func (app *repository) Retrieve() (Chain, error) {
 		return nil, err
 	}
 
-	height := trChain.Height()
+	total := trChain.Total()
 	createdOn := trChain.CreatedOn()
 	return app.builder.Create().
 		WithGenesis(gen).
 		WithRoot(root).
 		WithHead(head).
-		WithHeight(height).
+		WithTotal(total).
 		CreatedOn(createdOn).
 		Now()
 }

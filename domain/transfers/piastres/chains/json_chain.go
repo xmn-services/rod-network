@@ -9,7 +9,7 @@ type jsonChain struct {
 	Genesis   string    `json:"genesis"`
 	Root      string    `json:"root"`
 	Head      string    `json:"head"`
-	Height    uint      `json:"height"`
+	Total     uint      `json:"total"`
 	CreatedOn time.Time `json:"created_on"`
 }
 
@@ -18,9 +18,9 @@ func createJSONChainFromChain(ins Chain) *jsonChain {
 	genesis := ins.Genesis().String()
 	root := ins.Root().String()
 	head := ins.Head().String()
-	height := ins.Height()
+	total := ins.Total()
 	createdOn := ins.CreatedOn()
-	return createJSONChain(hash, genesis, root, head, height, createdOn)
+	return createJSONChain(hash, genesis, root, head, total, createdOn)
 }
 
 func createJSONChain(
@@ -28,7 +28,7 @@ func createJSONChain(
 	genesis string,
 	root string,
 	head string,
-	height uint,
+	total uint,
 	createdOn time.Time,
 ) *jsonChain {
 	out := jsonChain{
@@ -36,7 +36,7 @@ func createJSONChain(
 		Genesis:   genesis,
 		Root:      root,
 		Head:      head,
-		Height:    height,
+		Total:     total,
 		CreatedOn: createdOn,
 	}
 

@@ -58,7 +58,7 @@ type Builder interface {
 	WithGenesis(gen genesis.Genesis) Builder
 	WithRoot(root mined_block.Block) Builder
 	WithHead(head mined_link.Link) Builder
-	WithHeight(height uint) Builder
+	WithTotal(total uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Chain, error)
 }
@@ -69,6 +69,7 @@ type Chain interface {
 	Genesis() genesis.Genesis
 	Root() mined_block.Block
 	Head() mined_link.Link
+	Total() uint
 	Height() uint
 }
 

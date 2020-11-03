@@ -15,7 +15,7 @@ type chain struct {
 	genesis   genesis.Genesis
 	root      mined_block.Block
 	head      mined_link.Link
-	height    uint
+	total     uint
 }
 
 func createChain(
@@ -23,14 +23,14 @@ func createChain(
 	genesis genesis.Genesis,
 	root mined_block.Block,
 	head mined_link.Link,
-	height uint,
+	total uint,
 ) Chain {
 	out := chain{
 		immutable: immutable,
 		genesis:   genesis,
 		root:      root,
 		head:      head,
-		height:    height,
+		total:     total,
 	}
 
 	return &out
@@ -59,6 +59,11 @@ func (obj *chain) Head() mined_link.Link {
 // Height returns the height
 func (obj *chain) Height() uint {
 	return obj.Head().Link().Index()
+}
+
+// Total returns the total amount of transactions the chain contains
+func (obj *chain) Total() uint {
+	return obj.total
 }
 
 // CreatedOn returns the creation time

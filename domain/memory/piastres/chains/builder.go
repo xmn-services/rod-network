@@ -2,14 +2,15 @@ package chains
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/rod-network/libs/entities"
-	"github.com/xmn-services/rod-network/libs/hash"
 	mined_block "github.com/xmn-services/rod-network/domain/memory/piastres/blocks/mined"
 	"github.com/xmn-services/rod-network/domain/memory/piastres/genesis"
 	mined_link "github.com/xmn-services/rod-network/domain/memory/piastres/links/mined"
+	"github.com/xmn-services/rod-network/libs/entities"
+	"github.com/xmn-services/rod-network/libs/hash"
 )
 
 type builder struct {
@@ -18,7 +19,7 @@ type builder struct {
 	genesis          genesis.Genesis
 	root             mined_block.Block
 	head             mined_link.Link
-	height           uint
+	total            uint
 	createdOn        *time.Time
 }
 
@@ -32,7 +33,7 @@ func createBuilder(
 		genesis:          nil,
 		root:             nil,
 		head:             nil,
-		height:           0,
+		total:            0,
 		createdOn:        nil,
 	}
 
@@ -62,9 +63,9 @@ func (app *builder) WithHead(head mined_link.Link) Builder {
 	return app
 }
 
-// WithHeight adds an height block instance
-func (app *builder) WithHeight(height uint) Builder {
-	app.height = height
+// WithTotal adds a total to block instance
+func (app *builder) WithTotal(total uint) Builder {
+	app.total = total
 	return app
 }
 
@@ -88,11 +89,17 @@ func (app *builder) Now() (Chain, error) {
 		return nil, errors.New("the head link is mandatory in order to build a Chain instance")
 	}
 
+	known := uint(len(app.root.Block().Transactions()) + len(app.head.Link().Next().Transactions()))
+	if app.total < known {
+		str := fmt.Sprintf("there is %d transactions in the root and head blocks, therefore the total (%d) must be bigger or equal to that amount", known, app.total)
+		return nil, errors.New(str)
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		app.genesis.Hash().Bytes(),
 		app.root.Hash().Bytes(),
 		app.head.Hash().Bytes(),
-		[]byte(strconv.Itoa(int(app.height))),
+		[]byte(strconv.Itoa(int(app.total))),
 	})
 
 	if err != nil {
@@ -104,5 +111,5 @@ func (app *builder) Now() (Chain, error) {
 		return nil, err
 	}
 
-	return createChain(immutable, app.genesis, app.root, app.head, app.height), nil
+	return createChain(immutable, app.genesis, app.root, app.head, app.total), nil
 }

@@ -24,14 +24,14 @@ func (app *adapter) ToTransfer(chain Chain) (transfer_chains.Chain, error) {
 	gen := chain.Genesis().Hash()
 	root := chain.Root().Hash()
 	head := chain.Head().Hash()
-	height := chain.Height()
+	total := chain.Total()
 	createdOn := chain.CreatedOn()
 	return app.trBuilder.Create().
 		WithHash(hash).
 		WithGenesis(gen).
 		WithRoot(root).
 		WithHead(head).
-		WithHeight(height).
+		WithTotal(total).
 		CreatedOn(createdOn).
 		Now()
 }

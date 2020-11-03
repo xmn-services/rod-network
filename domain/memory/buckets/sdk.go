@@ -66,6 +66,7 @@ type Bucket interface {
 // Repository represents a bucket bucket repository
 type Repository interface {
 	Retrieve(hash hash.Hash) (Bucket, error)
+	RetrieveAll(hashes []hash.Hash) ([]Bucket, error)
 }
 
 // Service represents a bucket bucket service

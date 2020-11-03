@@ -13,7 +13,7 @@ type chain struct {
 	genesis   hash.Hash
 	root      hash.Hash
 	head      hash.Hash
-	height    uint
+	total     uint
 }
 
 func createChainFromJSON(ins *jsonChain) (Chain, error) {
@@ -44,7 +44,7 @@ func createChainFromJSON(ins *jsonChain) (Chain, error) {
 		WithGenesis(*genesis).
 		WithRoot(*root).
 		WithHead(*head).
-		WithHeight(ins.Height).
+		WithTotal(ins.Total).
 		CreatedOn(ins.CreatedOn).
 		Now()
 }
@@ -54,14 +54,14 @@ func createChain(
 	genesis hash.Hash,
 	root hash.Hash,
 	head hash.Hash,
-	height uint,
+	total uint,
 ) Chain {
 	out := chain{
 		immutable: immutable,
 		genesis:   genesis,
 		root:      root,
 		head:      head,
-		height:    height,
+		total:     total,
 	}
 
 	return &out
@@ -87,9 +87,9 @@ func (obj *chain) Head() hash.Hash {
 	return obj.head
 }
 
-// Height returns the height
-func (obj *chain) Height() uint {
-	return obj.height
+// Total returns the total
+func (obj *chain) Total() uint {
+	return obj.total
 }
 
 // CreatedOn returns the creation time
@@ -121,6 +121,6 @@ func (obj *chain) UnmarshalJSON(data []byte) error {
 	obj.genesis = insChain.genesis
 	obj.root = insChain.root
 	obj.head = insChain.head
-	obj.height = insChain.height
+	obj.total = insChain.total
 	return nil
 }

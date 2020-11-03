@@ -44,7 +44,7 @@ type Builder interface {
 	WithGenesis(gen hash.Hash) Builder
 	WithRoot(root hash.Hash) Builder
 	WithHead(head hash.Hash) Builder
-	WithHeight(height uint) Builder
+	WithTotal(total uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Chain, error)
 }
@@ -55,7 +55,7 @@ type Chain interface {
 	Genesis() hash.Hash
 	Root() hash.Hash
 	Head() hash.Hash
-	Height() uint
+	Total() uint
 }
 
 // Repository represents the chain repository

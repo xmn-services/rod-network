@@ -123,13 +123,13 @@ func (app *builder) Now() (Identity, error) {
 
 	if app.wallets != nil {
 		for _, oneWallet := range app.wallets {
-			data = append(data, []byte(oneWallet.Hash().Bytes()))
+			data = append(data, oneWallet.Hash().Bytes())
 		}
 	}
 
 	if app.buckets != nil {
 		for _, oneBucket := range app.buckets {
-			data = append(data, []byte(oneBucket.Hash().Bytes()))
+			data = append(data, oneBucket.Hash().Bytes())
 		}
 	}
 
